@@ -1,0 +1,18 @@
+(***************************************************************)
+(* EBNF for ptscheme                                           *)
+(*                                                             *)
+(* c.f. https://en.wikipedia.org/wiki/EBNF                     *)
+(* c.f. http://www.css.cmu.edu/~pattis/misc/ebnf.pdf           *)
+(* c.f. http://www.regular-expressions.info/floatingpoint.html *)
+(*                                                             *)
+(***************************************************************)
+
+symbol -> "([A-Z] | [a-z])+" ;
+
+number -> "[-+]?[0-9]*\.?[0-9]+" ;
+
+atom -> number | symbol ;
+
+list -> "(" , { s-expression } , ")" ;
+
+s-expression -> atom | list ;
