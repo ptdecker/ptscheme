@@ -24,13 +24,35 @@
 #include <string.h>
 #include <editline/readline.h>
 
+/* Global vars */
+
+char *token;
+
+/* Lex List */
+
+void lex_list() {
+	printf("%s\n", "left parenthesis");
+}
+
+/* Lexer */
+
+void lex() {
+ 	if (c[0] = '(') {
+ 		lex_list();
+ 	} else {
+	 	printf("%s\n", token);
+	 	token = strtok(NULL, " ");
+	 	if (token != NULL) {
+ 			lex();
+ 		}
+ 	}
+}
+
  /* Main */
 
 int main (int argc, char** argv) {
 
 	char* input;
-	char* s = " ";
-	char *token;
 
 	/* Set up readline */
 
@@ -58,18 +80,10 @@ int main (int argc, char** argv) {
 
 		add_history(input);
 
-		// Echo the users input (for now)
+		// Let's get started!
 
-//		fputs(input, stdout);
-//		fputc('\n', stdout);
-
-		// List out tokens
-
-		token = strtok(input, s);
-		while (token != NULL) {
-			printf("%s\n", token);
-			token = strtok(NULL, s);
-		}
+		token = strtok(input, " ");
+		lex();
 
 		// Free input
 
