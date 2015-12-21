@@ -18,6 +18,8 @@
  *			- Changes from the Michaux version:
  *				- Inclusion of an error type so that malformed input doesn't kill the app
  *              - Handled the singleton boolean object type differently to parallel other objects
+ *              - Implemented characters using C-style character literals
+ *				- Included support for all C-style escape sequences except for octal and hex
  *
  * Due to the inclusion of GNU Readline, this project is also licensed under GPL v3
  */
@@ -34,6 +36,7 @@
 
 typedef enum {
 	BOOLEAN,
+	CHARACTER,
 	FIXNUM,
 	ERROR
 } object_type;
@@ -44,6 +47,9 @@ typedef struct object {
 		struct {
 			char value;
 		} boolean;
+		struct {
+			char value;
+		} character;
 		struct {
 			long value;
 		} fixnum;
@@ -98,6 +104,20 @@ bool is_false(object *obj) {
 
 bool is_true(object *obj) {
 	return (obj->data.boolean.value == true);
+}
+
+// Character native type
+
+object *make_character(char value) {
+	object *obj;
+	obj = alloc_object();
+	obj->type = CHARACTER;
+	obj->data.character.value = value;
+	return obj;
+}
+
+bool is_character(object *obj) {
+	return (obj->type == CHARACTER);
 }
 
 // Integer native type
@@ -166,6 +186,88 @@ void flush_input(FILE *in) {
 	while (((c = getc(in)) != EOF) && (c != '\n'));
 }
 
+object *read_character(FILE *in) {
+
+	int c;
+	int n; // next character (use to check for postfix single quote)
+
+	c = getc(in);
+
+	switch (c) {
+		case EOF:
+			return make_error(4, "incomplete character literal");
+		case '\n':
+			return make_error(4, "incomplete character literal");
+		case '\'':
+			c = '\000';
+			break;
+		case '\\':
+			c = getc(in);
+			switch (c) {
+				case EOF:
+				case '\n':
+					flush_input(in);
+					return make_error(4, "incomplete character literal");
+				case 'a':  // Alarm (Beep, bell character)
+					c = '\a';
+					break;
+				case 'b':  // Backspace
+					c = '\b';
+					break;
+				case 'f':  // Formfeed
+					c = '\f';
+					break;
+				case 'n':  // Newline (Linefeed)
+					c = '\n';
+					break;
+				case 'r':  // Carriage return
+					c = '\r';
+					break;
+				case 't':  // Tab
+					c = '\t';
+					break;
+				case 'v':  // Vertical tab
+					c = '\v';
+					break;
+				case '\\': // Backslash
+					c = '\\';
+					break;
+				case '\'': // Single quote
+					if (peek(in) == '\'') {
+						c = '\'';
+						break;
+					} else {
+						flush_input(in);
+						return make_error(4, "incomplete character literal--missing terminating single quote");
+					}
+				case '"':  // Double quote
+					c = '\"';
+					break;
+				case '?':  // Question mark
+					c = '\?';
+					break;
+				default:
+					flush_input(in);
+					return make_error(6, "invalid character literal escape code");
+			}
+	}
+
+	if (c) {
+		n = getc(in);
+		if (n != '\'') {
+			flush_input(in);
+			return make_error(4, "incomplete character literal--missing terminating single quote");
+		}
+	}
+
+	if (!is_delimiter(peek(in))) {
+		return make_error(5, "character literal not followed by delimiter");
+	}
+
+	return (make_character(c));
+
+}
+
 object *read(FILE *in) {
 
 	int   c;
@@ -184,6 +286,8 @@ object *read(FILE *in) {
 				return make_boolean(true);
 			case 'f':
 				return make_boolean(false);
+			case '\'':
+				return read_character(in);
 			default:
 				flush_input(in);
 				return make_error(3, "unknown boolean literal");
@@ -227,15 +331,61 @@ object *eval(object *exp) {
 /* REPL - Print */
 
 void write(object *obj) {
+	char c;
 	switch (obj->type) {
 		case BOOLEAN:
 			printf("#%c", is_false(obj) ? 'f' : 't');
+			break;
+		case CHARACTER:
+			c = obj->data.character.value;
+			printf("#'");
+			switch (c) {
+				case '\000':  // Null
+					printf("NULL");
+					break;
+				case '\a':  // Alarm (Beep, bell character)
+					printf("\\a");
+					break;
+				case '\b':  // Backspace
+					printf("\\b");
+					break;
+				case '\f':  // Formfeed
+					printf("\\f");
+					break;
+				case '\n':  // Newline (Linefeed)
+					printf("\\n");
+					break;
+				case '\r':  // Carriage return
+					printf("\\r");
+					break;
+				case '\t':  // Tab
+					printf("\\t");
+					break;
+				case '\v':  // Vertical tab
+					printf("\\v");
+					break;
+				case '\\': // Backslash
+					printf("\\\\");
+					break;
+				case '\'': // Single quote
+					printf("\\'");
+					break;
+				case '\"':  // Double quote
+					printf("\\\"");
+					break;
+				case '\?':  // Question mark
+					printf("\\?");
+					break;
+				default:
+					putchar(c);
+			}
+			printf("'");
 			break;
 		case FIXNUM:
 			printf("%ld", obj->data.fixnum.value);
 			break;
 		case ERROR:
-			printf("Error %ld: %s\n", obj->data.error.error_num, obj->data.error.error_msg);
+			printf("Error %ld: %s", obj->data.error.error_num, obj->data.error.error_msg);
 			break;
 		default:
 			fprintf(stderr, "cannot write unknown type\n");
