@@ -32,12 +32,17 @@
 #include <string.h>
 #include <ctype.h>
 
+/* Const declarations */
+
+const int BUFFER_MAX = 1000;
+
 /* Type declarations */
 
 typedef enum {
 	BOOLEAN,
 	CHARACTER,
 	FIXNUM,
+	STRING,
 	ERROR
 } object_type;
 
@@ -53,6 +58,9 @@ typedef struct object {
 		struct {
 			long value;
 		} fixnum;
+		struct {
+			char *value;
+		} string;
 		struct {
 			long error_num;
 			char *error_msg;
@@ -132,6 +140,25 @@ object *make_fixnum(long value) {
 
 bool is_fixnum(object *obj) {
 	return (obj->type == FIXNUM);
+}
+
+// String native type
+
+object *make_string(char *value) {
+	object *obj;
+	obj = alloc_object();
+	obj->type = STRING;
+	obj->data.string.value = malloc(strlen(value) + 1);
+	if (obj->data.string.value == NULL) {
+		fprintf(stderr, "Out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+	strcpy(obj->data.string.value, value);
+	return obj;
+}
+
+bool is_string(object *obj) {
+	return (obj->type == STRING);
 }
 
 // Error native type
@@ -271,8 +298,11 @@ object *read_character(FILE *in) {
 object *read(FILE *in) {
 
 	int   c;
+	int   i;
 	short sign = 1;
 	long  num  = 0;
+	char  buffer[BUFFER_MAX];
+	bool  closed;
 
 	eat_whitespace(in);
 
@@ -313,6 +343,109 @@ object *read(FILE *in) {
 			return make_error(1, "number not followed by delimiter");
 		}
 
+	} else if (c == '"') {
+
+		i = 0;
+		closed = false;
+
+        while (!closed) {
+
+        	c = getc(in);
+
+            if (c == EOF) {
+            	flush_input(in);
+            	return make_error(6, "non-terminated string literal\n");
+            }
+
+        	if (c == '\"') {
+        		closed = true;
+        		continue;
+        	}
+
+            switch (c) {
+            	case '\a':
+            		c = '\a';
+            		break;
+            	case '\b':
+            		c = '\b';
+            		break;
+            	case '\f':
+            		c = '\f';
+            		break;
+            	case '\n':
+            		c = '\n';
+            		break;
+            	case '\r':
+            		c = '\r';
+            		break;
+            	case '\t':
+            		c = '\t';
+            		break;
+            	case '\v':
+            		c = '\v';
+            		break;
+            	case '\\':
+                	c = getc(in);
+					switch (c) {
+						case EOF:
+							flush_input(in);
+							return make_error(7, "incomplete  literal");
+						case 'a':  // Alarm (Beep, bell character)
+							c = '\a';
+							break;
+						case 'b':  // Backspace
+							c = '\b';
+							break;
+						case 'f':  // Formfeed
+							c = '\f';
+							break;
+						case 'n':  // Newline (Linefeed)
+							c = '\n';
+							break;
+						case 'r':  // Carriage return
+							c = '\r';
+							break;
+						case 't':  // Tab
+							c = '\t';
+							break;
+						case 'v':  // Vertical tab
+							c = '\v';
+							break;
+						case '\\': // Backslash
+							c = '\\';
+							break;
+						case '\'': // Single quote
+							c = '\'';
+							break;
+						case '"':  // Double quote
+							c = '\"';
+							break;
+						case '?':  // Question mark
+							c = '\?';
+							break;
+					}
+                	break;
+                case '\'':
+                	c = '\'';
+                	break;
+                case '\?':
+                	c = '\?';
+                	break;
+
+        	} // switch
+
+            if (i < BUFFER_MAX - 1) {
+                buffer[i++] = c;
+            } else {
+            	flush_input(in);
+            	return make_error(7, "string too long");
+            }
+
+        } // while getting characters
+
+        buffer[i] = '\0';
+        return make_string(buffer);
+
 	} else {
 		flush_input(in);
 		return make_error(2, "bad input");
@@ -331,7 +464,10 @@ object *eval(object *exp) {
 /* REPL - Print */
 
 void write(object *obj) {
+
 	char c;
+	char *str;
+
 	switch (obj->type) {
 		case BOOLEAN:
 			printf("#%c", is_false(obj) ? 'f' : 't');
@@ -384,6 +520,51 @@ void write(object *obj) {
 		case FIXNUM:
 			printf("%ld", obj->data.fixnum.value);
 			break;
+		case STRING:
+		    str = obj->data.string.value;
+            putchar('"');
+            while (*str != '\0') {
+                switch (*str) {
+					case '\a':
+						printf("\\a");
+						break;
+					case '\b':
+						printf("\\b");
+						break;
+					case '\f':
+						printf("\\f");
+						break;
+                    case '\n':
+                        printf("\\n");
+                        break;
+					case '\r': 
+						printf("\\r");
+						break;
+					case '\t':
+						printf("\\t");
+						break;
+					case '\v':
+						printf("\\v");
+						break;
+                    case '\\':
+                        printf("\\\\");
+                        break;
+					case '\'':
+						printf("\\'");
+						break;
+					case '\"':
+						printf("\\\"");
+						break;
+					case '\?':
+						printf("\\?");
+						break;
+                    default:
+                        putchar(*str);
+                }
+                str++;
+            }
+            putchar('"');
+            break;
 		case ERROR:
 			printf("Error %ld: %s", obj->data.error.error_num, obj->data.error.error_msg);
 			break;
@@ -391,6 +572,7 @@ void write(object *obj) {
 			fprintf(stderr, "cannot write unknown type\n");
 			exit(EXIT_FAILURE);
 	} // switch
+
 } // write()
 
 /* REPL */
