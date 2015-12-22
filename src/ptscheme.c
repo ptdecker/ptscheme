@@ -199,7 +199,7 @@ void eat_whitespace(FILE *in) {
 	while ((c = getc(in)) != EOF) {
 		if (isspace(c))
 			continue;
-		else if (c == ';') {
+		if (c == ';') {
 			while (((c = getc(in)) != EOF) && (c != '\n'));
 			continue;
 		}
@@ -213,87 +213,84 @@ void flush_input(FILE *in) {
 	while (((c = getc(in)) != EOF) && (c != '\n'));
 }
 
+char make_esc_seq(const char c) {
+	switch (c) {
+		case '0':  // Null
+			return '\0';
+		case 'a':  // Alarm (Beep, bell character)
+			return '\a';
+		case 'b':  // Backspace
+			return '\b';
+		case 'f':  // Formfeed
+			return '\f';
+		case 'n':  // Newline (Linefeed)
+			return '\n';
+		case 'r':  // Carriage return
+			return '\r';
+		case 't':  // Tab
+			return '\t';
+		case 'v':  // Vertical tab
+			return '\v';
+		case '\\': // Backslash
+			return '\\';
+		case '\'': // Single quote
+			return '\'';
+		case '"':  // Double quote
+			return '\"';
+		case '?':  // Question mark
+			return '\?';
+		default:
+			return c;
+	}
+}
+
 object *read_character(FILE *in) {
 
+	// Coming in here, we have already read the sequence:  #'
+
 	int c;
-	int n; // next character (use to check for postfix single quote)
 
 	c = getc(in);
 
-	switch (c) {
-		case EOF:
-			return make_error(4, "incomplete character literal");
-		case '\n':
-			return make_error(4, "incomplete character literal");
-		case '\'':
-			c = '\000';
-			break;
-		case '\\':
-			c = getc(in);
-			switch (c) {
-				case EOF:
-				case '\n':
-					flush_input(in);
-					return make_error(4, "incomplete character literal");
-				case 'a':  // Alarm (Beep, bell character)
-					c = '\a';
-					break;
-				case 'b':  // Backspace
-					c = '\b';
-					break;
-				case 'f':  // Formfeed
-					c = '\f';
-					break;
-				case 'n':  // Newline (Linefeed)
-					c = '\n';
-					break;
-				case 'r':  // Carriage return
-					c = '\r';
-					break;
-				case 't':  // Tab
-					c = '\t';
-					break;
-				case 'v':  // Vertical tab
-					c = '\v';
-					break;
-				case '\\': // Backslash
-					c = '\\';
-					break;
-				case '\'': // Single quote
-					if (peek(in) == '\'') {
-						c = '\'';
-						break;
-					} else {
-						flush_input(in);
-						return make_error(4, "incomplete character literal--missing terminating single quote");
-					}
-				case '"':  // Double quote
-					c = '\"';
-					break;
-				case '?':  // Question mark
-					c = '\?';
-					break;
-				default:
-					flush_input(in);
-					return make_error(6, "invalid character literal escape code");
-			}
+	// Either EOF or end of line encountered early
+
+	if ((c == EOF) || (c == '\n')) {
+		return make_error(4, "incomplete character literal");
 	}
 
-	if (c) {
-		n = getc(in);
-		if (n != '\'') {
-			flush_input(in);
-			return make_error(4, "incomplete character literal--missing terminating single quote");
+	// Start of escape sequence encountered
+
+	if (c == '\\') {
+
+		c = getc(in);
+
+		// Either EOF or end of line encountered early
+
+		if ((c == EOF) || (c == '\n')) {
+			return make_error(4, "incomplete character literal");
 		}
+
+		// Make sure next charactor is the terminiating single-quote
+
+		if (peek(in) != '\'') {
+			return make_error(4, "character literal missing termination");
+		}
+
+		c = make_esc_seq(c);
+
 	}
 
-	if (!is_delimiter(peek(in))) {
-		return make_error(5, "character literal not followed by delimiter");
+	// Make sure next charactor is the terminiating single-quote
+
+	if (peek(in) != '\'') {
+		return make_error(4, "character literal missing termination");
 	}
 
+	flush_input(in); // Dump the rest of the line
 	return (make_character(c));
 
 }
+
 
 object *read(FILE *in) {
 
@@ -302,13 +299,16 @@ object *read(FILE *in) {
 	short sign = 1;
 	long  num  = 0;
 	char  buffer[BUFFER_MAX];
-	bool  closed;
 
 	eat_whitespace(in);
 
 	c = getc(in);
 
 	if (c == '#') {
+
+		if (peek(in) == EOF || peek(in) == '\n') {
+			return make_error(10, "unexpected end of line encountered");
+		}
 
 		c = getc(in);
 		switch (c) {
@@ -346,100 +346,42 @@ object *read(FILE *in) {
 	} else if (c == '"') {
 
 		i = 0;
-		closed = false;
 
-        while (!closed) {
+        while (true) {
 
         	c = getc(in);
+
+        	// At EOF before string termination
 
             if (c == EOF) {
             	flush_input(in);
             	return make_error(6, "non-terminated string literal\n");
             }
 
+            // String termination reached
+
         	if (c == '\"') {
-        		closed = true;
-        		continue;
+        		break;
         	}
 
-            switch (c) {
-            	case '\a':
-            		c = '\a';
-            		break;
-            	case '\b':
-            		c = '\b';
-            		break;
-            	case '\f':
-            		c = '\f';
-            		break;
-            	case '\n':
-            		c = '\n';
-            		break;
-            	case '\r':
-            		c = '\r';
-            		break;
-            	case '\t':
-            		c = '\t';
-            		break;
-            	case '\v':
-            		c = '\v';
-            		break;
-            	case '\\':
-                	c = getc(in);
-					switch (c) {
-						case EOF:
-							flush_input(in);
-							return make_error(7, "incomplete  literal");
-						case 'a':  // Alarm (Beep, bell character)
-							c = '\a';
-							break;
-						case 'b':  // Backspace
-							c = '\b';
-							break;
-						case 'f':  // Formfeed
-							c = '\f';
-							break;
-						case 'n':  // Newline (Linefeed)
-							c = '\n';
-							break;
-						case 'r':  // Carriage return
-							c = '\r';
-							break;
-						case 't':  // Tab
-							c = '\t';
-							break;
-						case 'v':  // Vertical tab
-							c = '\v';
-							break;
-						case '\\': // Backslash
-							c = '\\';
-							break;
-						case '\'': // Single quote
-							c = '\'';
-							break;
-						case '"':  // Double quote
-							c = '\"';
-							break;
-						case '?':  // Question mark
-							c = '\?';
-							break;
-					}
-                	break;
-                case '\'':
-                	c = '\'';
-                	break;
-                case '\?':
-                	c = '\?';
-                	break;
+            // Make sure we have enough space left in our buffer
 
-        	} // switch
-
-            if (i < BUFFER_MAX - 1) {
-                buffer[i++] = c;
-            } else {
-            	flush_input(in);
+            if (i == (BUFFER_MAX - 1)) {
             	return make_error(7, "string too long");
             }
+
+        	// Convert escape sequences into control characters
+
+        	if (c == '\\') {
+                c = getc(in);
+                if (c == EOF) {
+					flush_input(in);
+					return make_error(7, "incomplete  literal");
+				}
+				c = make_esc_seq(c);        		
+        	}
+
+            buffer[i++] = c;
 
         } // while getting characters
 
@@ -533,48 +475,6 @@ void write(object *obj) {
             	str2[0] = '\0';
             	expand_esc_seq(str2, *str);
             	printf("%s", str2);
-
-
-/*            	
-                switch (*str) {
-					case '\a':
-						printf("\\a");
-						break;
-					case '\b':
-						printf("\\b");
-						break;
-					case '\f':
-						printf("\\f");
-						break;
-                    case '\n':
-                        printf("\\n");
-                        break;
-					case '\r': 
-						printf("\\r");
-						break;
-					case '\t':
-						printf("\\t");
-						break;
-					case '\v':
-						printf("\\v");
-						break;
-                    case '\\':
-                        printf("\\\\");
-                        break;
-					case '\'':
-						printf("\\'");
-						break;
-					case '\"':
-						printf("\\\"");
-						break;
-					case '\?':
-						printf("\\?");
-						break;
-                    default:
-                        putchar(*str);
-                }
-*/
-
                 str++;
             }
             putchar('"');
