@@ -461,61 +461,67 @@ object *eval(object *exp) {
 	return exp;
 }
 
+void expand_esc_seq(char str[], const char c) {
+
+	switch (c) {
+		case '\0':  // Null
+			strcat(str, "NULL");
+			break;
+		case '\a':  // Alarm (Beep, bell character)
+			strcat(str, "\\a");
+			break;
+		case '\b':  // Backspace
+			strcat(str, "\\b");
+			break;
+		case '\f':  // Formfeed
+			strcat(str, "\\f");
+			break;
+		case '\n':  // Newline (Linefeed)
+			strcat(str, "\\n");
+			break;
+		case '\r':  // Carriage return
+			strcat(str, "\\r");
+			break;
+		case '\t':  // Tab
+			strcat(str, "\\t");
+			break;
+		case '\v':  // Vertical tab
+			strcat(str, "\\v");
+			break;
+		case '\\': // Backslash
+			strcat(str, "\\\\");
+			break;
+		case '\'': // Single quote
+			strcat(str, "\\'");
+			break;
+		case '\"':  // Double quote
+			strcat(str, "\\\"");
+			break;
+		case '\?':  // Question mark
+			strcat(str, "\\?");
+			break;
+		default:
+			str[0] = c;
+			str[1] = '\0';
+	} // switch
+	return;
+} // expand_esc_seq
+
 /* REPL - Print */
 
 void write(object *obj) {
 
-	char c;
-	char *str;
+	char *str  = NULL;
+	char str2[5];
 
 	switch (obj->type) {
 		case BOOLEAN:
 			printf("#%c", is_false(obj) ? 'f' : 't');
 			break;
 		case CHARACTER:
-			c = obj->data.character.value;
-			printf("#'");
-			switch (c) {
-				case '\000':  // Null
-					printf("NULL");
-					break;
-				case '\a':  // Alarm (Beep, bell character)
-					printf("\\a");
-					break;
-				case '\b':  // Backspace
-					printf("\\b");
-					break;
-				case '\f':  // Formfeed
-					printf("\\f");
-					break;
-				case '\n':  // Newline (Linefeed)
-					printf("\\n");
-					break;
-				case '\r':  // Carriage return
-					printf("\\r");
-					break;
-				case '\t':  // Tab
-					printf("\\t");
-					break;
-				case '\v':  // Vertical tab
-					printf("\\v");
-					break;
-				case '\\': // Backslash
-					printf("\\\\");
-					break;
-				case '\'': // Single quote
-					printf("\\'");
-					break;
-				case '\"':  // Double quote
-					printf("\\\"");
-					break;
-				case '\?':  // Question mark
-					printf("\\?");
-					break;
-				default:
-					putchar(c);
-			}
-			printf("'");
+			str2[0] = '\0';
+			expand_esc_seq(str2, obj->data.character.value);
+			printf("#'%s'", str2);
 			break;
 		case FIXNUM:
 			printf("%ld", obj->data.fixnum.value);
@@ -524,6 +530,12 @@ void write(object *obj) {
 		    str = obj->data.string.value;
             putchar('"');
             while (*str != '\0') {
+            	str2[0] = '\0';
+            	expand_esc_seq(str2, *str);
+            	printf("%s", str2);
+
+
+/*            	
                 switch (*str) {
 					case '\a':
 						printf("\\a");
@@ -561,6 +573,8 @@ void write(object *obj) {
                     default:
                         putchar(*str);
                 }
+*/
+
                 str++;
             }
             putchar('"');
