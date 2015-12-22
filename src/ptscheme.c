@@ -20,6 +20,7 @@
  *              - Handled the singleton boolean object type differently to parallel other objects
  *              - Implemented characters using C-style character literals
  *				- Included support for all C-style escape sequences except for octal and hex
+ *				- Echoed the way the singleton boolean was handled for singleton empty
  *
  * Due to the inclusion of GNU Readline, this project is also licensed under GPL v3
  */
@@ -38,6 +39,28 @@
 #include "lispint.h"
 #include "lispstr.h"
 #include "lisperr.h"
+
+//TODO: Move empty list out into its own module once more list stuff is in here
+
+/* Empty List */
+
+object *make_empty() {
+
+	// The empty list is a singletons
+
+	static object *empty_list;
+
+	if (empty_list == NULL) {
+		empty_list = alloc_object();
+		empty_list->type = EMPTY_LIST;
+	}
+
+	return empty_list;
+}
+
+bool is_empty(object *obj) {
+	return (obj->type == EMPTY_LIST);
+}
 
 /* REPL - Read */
 
@@ -251,6 +274,19 @@ object *read(FILE *in) {
         buffer[i] = '\0';
         return make_string(buffer);
 
+    } else if (c == '(') {
+
+    	eat_whitespace(in);
+
+        c = getc(in);
+
+        if (c == ')') {
+            return make_empty();
+        }
+
+        flush_input(in);
+        return make_error(13, "unexpected character inside an empty list");
+
 	} else {
 		flush_input(in);
 		return make_error(2, "bad input");
@@ -327,6 +363,9 @@ void write(object *obj) {
 			str2[0] = '\0';
 			expand_esc_seq(str2, obj->data.character.value);
 			printf("#'%s'", str2);
+			break;
+		case EMPTY_LIST:
+			printf("()");
 			break;
 		case FIXNUM:
 			printf("%ld", obj->data.fixnum.value);
