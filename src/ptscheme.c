@@ -32,12 +32,17 @@
 #include <string.h>
 #include <ctype.h>
 
+/* Const declarations */
+
+const int BUFFER_MAX = 1000;
+
 /* Type declarations */
 
 typedef enum {
 	BOOLEAN,
 	CHARACTER,
 	FIXNUM,
+	STRING,
 	ERROR
 } object_type;
 
@@ -53,6 +58,9 @@ typedef struct object {
 		struct {
 			long value;
 		} fixnum;
+		struct {
+			char *value;
+		} string;
 		struct {
 			long error_num;
 			char *error_msg;
@@ -134,6 +142,25 @@ bool is_fixnum(object *obj) {
 	return (obj->type == FIXNUM);
 }
 
+// String native type
+
+object *make_string(char *value) {
+	object *obj;
+	obj = alloc_object();
+	obj->type = STRING;
+	obj->data.string.value = malloc(strlen(value) + 1);
+	if (obj->data.string.value == NULL) {
+		fprintf(stderr, "Out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+	strcpy(obj->data.string.value, value);
+	return obj;
+}
+
+bool is_string(object *obj) {
+	return (obj->type == STRING);
+}
+
 // Error native type
 
 object *make_error(long error_num, char *error_msg) {
@@ -172,7 +199,7 @@ void eat_whitespace(FILE *in) {
 	while ((c = getc(in)) != EOF) {
 		if (isspace(c))
 			continue;
-		else if (c == ';') {
+		if (c == ';') {
 			while (((c = getc(in)) != EOF) && (c != '\n'));
 			continue;
 		}
@@ -186,99 +213,102 @@ void flush_input(FILE *in) {
 	while (((c = getc(in)) != EOF) && (c != '\n'));
 }
 
+char make_esc_seq(const char c) {
+	switch (c) {
+		case '0':  // Null
+			return '\0';
+		case 'a':  // Alarm (Beep, bell character)
+			return '\a';
+		case 'b':  // Backspace
+			return '\b';
+		case 'f':  // Formfeed
+			return '\f';
+		case 'n':  // Newline (Linefeed)
+			return '\n';
+		case 'r':  // Carriage return
+			return '\r';
+		case 't':  // Tab
+			return '\t';
+		case 'v':  // Vertical tab
+			return '\v';
+		case '\\': // Backslash
+			return '\\';
+		case '\'': // Single quote
+			return '\'';
+		case '"':  // Double quote
+			return '\"';
+		case '?':  // Question mark
+			return '\?';
+		default:
+			return c;
+	}
+}
+
 object *read_character(FILE *in) {
 
+	// Coming in here, we have already read the sequence:  #'
+
 	int c;
-	int n; // next character (use to check for postfix single quote)
 
 	c = getc(in);
 
-	switch (c) {
-		case EOF:
-			return make_error(4, "incomplete character literal");
-		case '\n':
-			return make_error(4, "incomplete character literal");
-		case '\'':
-			c = '\000';
-			break;
-		case '\\':
-			c = getc(in);
-			switch (c) {
-				case EOF:
-				case '\n':
-					flush_input(in);
-					return make_error(4, "incomplete character literal");
-				case 'a':  // Alarm (Beep, bell character)
-					c = '\a';
-					break;
-				case 'b':  // Backspace
-					c = '\b';
-					break;
-				case 'f':  // Formfeed
-					c = '\f';
-					break;
-				case 'n':  // Newline (Linefeed)
-					c = '\n';
-					break;
-				case 'r':  // Carriage return
-					c = '\r';
-					break;
-				case 't':  // Tab
-					c = '\t';
-					break;
-				case 'v':  // Vertical tab
-					c = '\v';
-					break;
-				case '\\': // Backslash
-					c = '\\';
-					break;
-				case '\'': // Single quote
-					if (peek(in) == '\'') {
-						c = '\'';
-						break;
-					} else {
-						flush_input(in);
-						return make_error(4, "incomplete character literal--missing terminating single quote");
-					}
-				case '"':  // Double quote
-					c = '\"';
-					break;
-				case '?':  // Question mark
-					c = '\?';
-					break;
-				default:
-					flush_input(in);
-					return make_error(6, "invalid character literal escape code");
-			}
+	// Either EOF or end of line encountered early
+
+	if ((c == EOF) || (c == '\n')) {
+		return make_error(4, "incomplete character literal");
 	}
 
-	if (c) {
-		n = getc(in);
-		if (n != '\'') {
-			flush_input(in);
-			return make_error(4, "incomplete character literal--missing terminating single quote");
+	// Start of escape sequence encountered
+
+	if (c == '\\') {
+
+		c = getc(in);
+
+		// Either EOF or end of line encountered early
+
+		if ((c == EOF) || (c == '\n')) {
+			return make_error(4, "incomplete character literal");
 		}
+
+		// Make sure next charactor is the terminiating single-quote
+
+		if (peek(in) != '\'') {
+			return make_error(4, "character literal missing termination");
+		}
+
+		c = make_esc_seq(c);
+
 	}
 
-	if (!is_delimiter(peek(in))) {
-		return make_error(5, "character literal not followed by delimiter");
+	// Make sure next charactor is the terminiating single-quote
+
+	if (peek(in) != '\'') {
+		return make_error(4, "character literal missing termination");
 	}
 
+	flush_input(in); // Dump the rest of the line
 	return (make_character(c));
 
 }
 
+
 object *read(FILE *in) {
 
 	int   c;
+	int   i;
 	short sign = 1;
 	long  num  = 0;
+	char  buffer[BUFFER_MAX];
 
 	eat_whitespace(in);
 
 	c = getc(in);
 
 	if (c == '#') {
+
+		if (peek(in) == EOF || peek(in) == '\n') {
+			return make_error(10, "unexpected end of line encountered");
+		}
 
 		c = getc(in);
 		switch (c) {
@@ -313,6 +343,51 @@ object *read(FILE *in) {
 			return make_error(1, "number not followed by delimiter");
 		}
 
+	} else if (c == '"') {
+
+		i = 0;
+
+        while (true) {
+
+        	c = getc(in);
+
+        	// At EOF before string termination
+
+            if (c == EOF) {
+            	flush_input(in);
+            	return make_error(6, "non-terminated string literal\n");
+            }
+
+            // String termination reached
+
+        	if (c == '\"') {
+        		break;
+        	}
+
+            // Make sure we have enough space left in our buffer
+
+            if (i == (BUFFER_MAX - 1)) {
+            	return make_error(7, "string too long");
+            }
+
+        	// Convert escape sequences into control characters
+
+        	if (c == '\\') {
+                c = getc(in);
+                if (c == EOF) {
+					flush_input(in);
+					return make_error(7, "incomplete  literal");
+				}
+				c = make_esc_seq(c);        		
+        	}
+
+            buffer[i++] = c;
+
+        } // while getting characters
+
+        buffer[i] = '\0';
+        return make_string(buffer);
+
 	} else {
 		flush_input(in);
 		return make_error(2, "bad input");
@@ -328,62 +403,82 @@ object *eval(object *exp) {
 	return exp;
 }
 
+void expand_esc_seq(char str[], const char c) {
+
+	switch (c) {
+		case '\0':  // Null
+			strcat(str, "NULL");
+			break;
+		case '\a':  // Alarm (Beep, bell character)
+			strcat(str, "\\a");
+			break;
+		case '\b':  // Backspace
+			strcat(str, "\\b");
+			break;
+		case '\f':  // Formfeed
+			strcat(str, "\\f");
+			break;
+		case '\n':  // Newline (Linefeed)
+			strcat(str, "\\n");
+			break;
+		case '\r':  // Carriage return
+			strcat(str, "\\r");
+			break;
+		case '\t':  // Tab
+			strcat(str, "\\t");
+			break;
+		case '\v':  // Vertical tab
+			strcat(str, "\\v");
+			break;
+		case '\\': // Backslash
+			strcat(str, "\\\\");
+			break;
+		case '\'': // Single quote
+			strcat(str, "\\'");
+			break;
+		case '\"':  // Double quote
+			strcat(str, "\\\"");
+			break;
+		case '\?':  // Question mark
+			strcat(str, "\\?");
+			break;
+		default:
+			str[0] = c;
+			str[1] = '\0';
+	} // switch
+	return;
+} // expand_esc_seq
+
 /* REPL - Print */
 
 void write(object *obj) {
-	char c;
+
+	char *str  = NULL;
+	char str2[5];
+
 	switch (obj->type) {
 		case BOOLEAN:
 			printf("#%c", is_false(obj) ? 'f' : 't');
 			break;
 		case CHARACTER:
-			c = obj->data.character.value;
-			printf("#'");
-			switch (c) {
-				case '\000':  // Null
-					printf("NULL");
-					break;
-				case '\a':  // Alarm (Beep, bell character)
-					printf("\\a");
-					break;
-				case '\b':  // Backspace
-					printf("\\b");
-					break;
-				case '\f':  // Formfeed
-					printf("\\f");
-					break;
-				case '\n':  // Newline (Linefeed)
-					printf("\\n");
-					break;
-				case '\r':  // Carriage return
-					printf("\\r");
-					break;
-				case '\t':  // Tab
-					printf("\\t");
-					break;
-				case '\v':  // Vertical tab
-					printf("\\v");
-					break;
-				case '\\': // Backslash
-					printf("\\\\");
-					break;
-				case '\'': // Single quote
-					printf("\\'");
-					break;
-				case '\"':  // Double quote
-					printf("\\\"");
-					break;
-				case '\?':  // Question mark
-					printf("\\?");
-					break;
-				default:
-					putchar(c);
-			}
-			printf("'");
+			str2[0] = '\0';
+			expand_esc_seq(str2, obj->data.character.value);
+			printf("#'%s'", str2);
 			break;
 		case FIXNUM:
 			printf("%ld", obj->data.fixnum.value);
 			break;
+		case STRING:
+		    str = obj->data.string.value;
+            putchar('"');
+            while (*str != '\0') {
+            	str2[0] = '\0';
+            	expand_esc_seq(str2, *str);
+            	printf("%s", str2);
+                str++;
+            }
+            putchar('"');
+            break;
 		case ERROR:
 			printf("Error %ld: %s", obj->data.error.error_num, obj->data.error.error_msg);
 			break;
@@ -391,6 +486,7 @@ void write(object *obj) {
 			fprintf(stderr, "cannot write unknown type\n");
 			exit(EXIT_FAILURE);
 	} // switch
+
 } // write()
 
 /* REPL */
