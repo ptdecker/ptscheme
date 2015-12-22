@@ -14,6 +14,7 @@
 typedef enum {
 	BOOLEAN,
 	CHARACTER,
+	EMPTY_LIST,
 	FIXNUM,
 	STRING,
 	ERROR
@@ -28,6 +29,9 @@ typedef struct object {
 		struct {
 			char value;
 		} character;
+		struct {
+			// Empty
+		} empty;
 		struct {
 			long value;
 		} fixnum;
