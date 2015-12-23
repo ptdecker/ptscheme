@@ -234,6 +234,7 @@ object *read_character(FILE *in) {
 	// Coming in here, we have already read the sequence:  #'
 
 	int c;
+    int trash;
 
 	c = getc(in);
 
@@ -271,7 +272,7 @@ object *read_character(FILE *in) {
 		return make_error(4, "character literal missing termination");
 	}
 
-	flush_input(in); // Dump the rest of the line
+	trash = getc(in); // eat the postfix single quote
 	return (make_character(c));
 
 }

@@ -9,7 +9,8 @@
 vpath %.c src
 vpath %.h include
 
-CPPFLAGS = -std=c99 -Wall -ggdb -I include
+CC = clang
+CPPFLAGS = -std=c99 -Wall -g -I include
 objects  = ptscheme.o memmanager.o lispbool.o lispchar.o lispint.o lispstr.o lisperr.o
 
 # Standard targets
@@ -19,7 +20,7 @@ all: ptscheme
 # Define all our non-standard targets and their dependencies
 
 ptscheme: $(objects)
-	cc $(CPPFLAGS) -o ptscheme $(objects)
+	clang $(CPPFLAGS) -o ptscheme $(objects)
 
 ptscheme.o: ptscheme.h memmanager.h
 memmanager.o: ptscheme.h memmanager.h
