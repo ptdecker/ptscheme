@@ -40,6 +40,29 @@
 #include "lispstr.h"
 #include "lisperr.h"
 #include "lisppair.h"
+#include "hashtable.h"
+
+object *make_symbol(char *value) {
+
+    object *obj;
+    namelist *element;
+
+    /* search for they symbol in the symbol table and create it if it does not exist */
+
+    element = hashput(value, "");
+
+    /* allocate and return a new lisp object that points to the symbol */
+
+    obj = alloc_object();
+    obj->type = SYMBOL;
+    obj->data.symbol.element = element;
+
+    return obj;
+}
+
+char is_symbol(object *obj) {
+    return obj->type == SYMBOL;
+}
 
 /* REPL - Read */
 
@@ -50,6 +73,17 @@ bool is_delimiter(int c) {
             c == ')'   ||
             c == '"'   ||
             c == ';');
+}
+
+char is_initial(int c) {
+    return (isalpha(c) ||
+            c == '*'   ||
+            c == '/'   ||
+            c == '>'   ||
+            c == '<'   ||
+            c == '='   ||
+            c == '?'   ||
+            c == '!');
 }
 
 int peek(FILE *in) {
@@ -348,6 +382,39 @@ object *read(FILE *in) {
     if (c == '(')
         return read_pair(in);
 
+    /**
+     * Handle symbols
+     */
+
+
+    if (is_initial(c) || ((c == '+' || c == '-') && is_delimiter(peek(in)))) {
+
+        i = 0;
+
+        while (is_initial(c) || isdigit(c) || c == '+' || c == '-') {
+
+            if (i < BUFFER_MAX - 1)
+                buffer[i++] = c;
+            else
+                return make_error(40, "symbol too long. ");
+
+            c = getc(in);
+        }
+
+        if (is_delimiter(c)) {
+            buffer[i] = '\0';
+            ungetc(c, in);
+            return make_symbol(buffer);
+        }
+
+        return make_error(41, "symbol not followed by a delimiter");
+
+    }
+
+    /**
+     * We should have handled everything by now, if not then illegal state
+     */
+
     flush_input(in);
     fprintf(stderr, "read illegal state\n");
     exit(EXIT_FAILURE);
@@ -464,6 +531,10 @@ void write(object *obj) {
                 str++;
             }
             putchar('"');
+            break;
+        case SYMBOL:
+            printf("%s", obj->data.symbol.element->key);
+            hashdump();
             break;
         case ERROR:
             printf("Error %ld: %s", obj->data.error.error_num, obj->data.error.error_msg);

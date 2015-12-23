@@ -75,3 +75,12 @@ namelist *hashput(const char *key, const char *value) {
 
     return np;
 }
+
+void hashdump() {
+    int i;
+    namelist *np;
+    printf("\nHash table dump:\n");
+    for (i = 0; i < HASHSIZE; i++)
+        for (np = hashtable[i]; np != NULL; np = np->next)
+            printf("\t%s: %s\n", np->key, np->value);
+}
