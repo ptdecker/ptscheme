@@ -11,6 +11,7 @@ CC = clang
 CPPFLAGS = -std=c99 -Wall -g -I include
 objects = ptscheme.o memmanager.o lispbool.o lispchar.o lispint.o \
           lispstr.o lisperr.o lisppair.o hashtable.o
+testedlibs = hashtable.o
 tests = hashtabletest.o
 
 all: ptscheme testsuite
@@ -19,7 +20,7 @@ ptscheme: $(objects)
 #	clang $(CPPFLAGS) -o ptscheme $(objects)
 
 testsuite: $(tests)
-	clang $(tests) -o testsuite
+	clang $(tests) $(testedlibs) -o testsuite
 
 ptscheme.o: ptscheme.h memmanager.h
 

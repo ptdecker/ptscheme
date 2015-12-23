@@ -31,7 +31,7 @@ unsigned genhashkey(const char *s) {
  * @param  s value to find
  * @return   pointer to stored value (NULL == not found)
  */
-extern namelist *get(const char *key) {
+namelist *hashget(const char *key) {
 
     namelist *np;
 
@@ -42,12 +42,12 @@ extern namelist *get(const char *key) {
     return NULL;
 }
 
-extern namelist *put(const char *key, const char *value) {
+namelist *hashput(const char *key, const char *value) {
 
     namelist *np;
     unsigned hashval;
 
-    if ((np = get(key)) == NULL) {
+    if ((np = hashget(key)) == NULL) {
 
         // Key not found, entry not in hash table -- Add it
 

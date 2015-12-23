@@ -27,7 +27,7 @@ static namelist *hashtable[HASHSIZE];
 
 
 unsigned genhashkey(const char *s);
-extern namelist *get(const char *key);
-extern namelist *put(const char *key, const char *value);
+extern namelist *hashget(const char *key);
+extern namelist *hashput(const char *key, const char *value);
 
 #endif // !FILE_HASHTABLE_SEEN
