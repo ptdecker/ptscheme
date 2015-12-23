@@ -65,12 +65,14 @@ bool is_empty(object *obj) {
 /* Pair */
 
 object *cons(object *car, object *cdr) {
+
     object *obj;
     
     obj = alloc_object();
     obj->type = PAIR;
     obj->data.pair.car = car;
     obj->data.pair.cdr = cdr;
+
     return obj;
 }
 
@@ -79,6 +81,12 @@ char is_pair(object *obj) {
 }
 
 object *car(object *pair) {
+
+	if (!is_pair(pair)) {
+		fprintf(stderr, "%p (type: %d) is not a pair\n", pair, pair->type);
+    	exit(EXIT_FAILURE);
+	}
+
     return pair->data.pair.car;
 }
 
@@ -87,6 +95,12 @@ void set_car(object *obj, object* value) {
 }
 
 object *cdr(object *pair) {
+	
+	if (!is_pair(pair)) {
+		fprintf(stderr, "%p (type: %d) is not a pair\n", pair, pair->type);
+    	exit(EXIT_FAILURE);
+	}
+
     return pair->data.pair.cdr;
 }
 
@@ -154,7 +168,7 @@ void eat_whitespace(FILE *in) {
 		break;
 	}
 }
-
+/*
 //TODO:  Get rid of the hard exit in eat_expected_string
 
 void eat_expected_string(FILE *in, char *str) {
@@ -178,7 +192,7 @@ void peek_expected_delimiter(FILE *in) {
         exit(1);
     }
 }
-
+*/
 void flush_input(FILE *in) {
 	int c;
 	while (((c = getc(in)) != EOF) && (c != '\n'));
@@ -266,47 +280,73 @@ object *read_character(FILE *in) {
 
 object *read(FILE *in);
 
-//TODO: Get rid of hard exits in read_pair
-
 object *read_pair(FILE *in) {
 
     int c;
     object *car_obj;
     object *cdr_obj;
     
+    // Tighten things up
+
     eat_whitespace(in);
-    
-    c = getc(in);
-    if (c == ')') { /* read the empty list */
-        return make_empty();
+
+    // Handle the empty list condition (where we immediately get our closed paren)
+
+    if (peek(in) == ')') {
+    	c = getc(in); // Eat the closed paren
+    	return make_empty();
     }
-    ungetc(c, in);
+
+    // Recursively read the car portion of the pair
 
     car_obj = read(in);
 
+    // Tighten things up
+
     eat_whitespace(in);
-    
-    c = getc(in);    
-    if (c == '.') { /* read improper list */
+
+    // Handle an improper list
+
+    if (peek(in) == '.') {
+
+    	c = getc(in); // Eat the period
+
+    	// Check for a delimiter following the dot
+
         c = peek(in);
         if (!is_delimiter(c)) {
-            fprintf(stderr, "dot not followed by delimiter\n");
-            exit(1);
+        	flush_input(in);
+        	return make_error(34, "dot not followed by a delimiter");
         }
+
+        // Recursively read the cdr portion of the pair
+
         cdr_obj = read(in);
+
+        // Tighten up
+
         eat_whitespace(in);
+
+        // Make sure we have our closed paren
+
         c = getc(in);
         if (c != ')') {
-            fprintf(stderr,
-                    "where was the trailing right paren?\n");
-            exit(1);
+        	flush_input(in);
+        	return make_error(35, "trailing right parenthesis is missing after dotted cdr");
         }
-        return cons(car_obj, cdr_obj);
-    } else { /* read list */
-        ungetc(c, in);
-        cdr_obj = read_pair(in);        
+
+        // Then paste everything together
+
         return cons(car_obj, cdr_obj);
     }
+
+    // Recursively read the cdr portion of the pair
+
+    cdr_obj = read_pair(in);        
+
+    // Then pair them up with cons
+
+    return cons(car_obj, cdr_obj);
 }
 
 object *read(FILE *in) {
