@@ -7,11 +7,11 @@
 /* Lisp object constructors */
 
 object *alloc_object(void) {
-	object *obj;
-	obj = malloc(sizeof(object));
-	if (obj == NULL) {
-		fprintf(stderr, "Out of memory\n");
-		exit(EXIT_FAILURE);
-	}
-	return obj;
+    object *obj;
+    obj = malloc(sizeof(object));
+    if (obj == NULL) {
+        fprintf(stderr, "Out of memory\n");
+        exit(EXIT_FAILURE);
+    }
+    return obj;
 }
