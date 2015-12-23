@@ -62,6 +62,67 @@ bool is_empty(object *obj) {
 	return (obj->type == EMPTY_LIST);
 }
 
+/* Pair */
+
+object *cons(object *car, object *cdr) {
+    object *obj;
+    
+    obj = alloc_object();
+    obj->type = PAIR;
+    obj->data.pair.car = car;
+    obj->data.pair.cdr = cdr;
+    return obj;
+}
+
+char is_pair(object *obj) {
+    return obj->type == PAIR;
+}
+
+object *car(object *pair) {
+    return pair->data.pair.car;
+}
+
+void set_car(object *obj, object* value) {
+    obj->data.pair.car = value;
+}
+
+object *cdr(object *pair) {
+    return pair->data.pair.cdr;
+}
+
+void set_cdr(object *obj, object* value) {
+    obj->data.pair.cdr = value;
+}
+
+#define caar(obj)   car(car(obj))
+#define cadr(obj)   car(cdr(obj))
+#define cdar(obj)   cdr(car(obj))
+#define cddr(obj)   cdr(cdr(obj))
+#define caaar(obj)  car(car(car(obj)))
+#define caadr(obj)  car(car(cdr(obj)))
+#define cadar(obj)  car(cdr(car(obj)))
+#define caddr(obj)  car(cdr(cdr(obj)))
+#define cdaar(obj)  cdr(car(car(obj)))
+#define cdadr(obj)  cdr(car(cdr(obj)))
+#define cddar(obj)  cdr(cdr(car(obj)))
+#define cdddr(obj)  cdr(cdr(cdr(obj)))
+#define caaaar(obj) car(car(car(car(obj))))
+#define caaadr(obj) car(car(car(cdr(obj))))
+#define caadar(obj) car(car(cdr(car(obj))))
+#define caaddr(obj) car(car(cdr(cdr(obj))))
+#define cadaar(obj) car(cdr(car(car(obj))))
+#define cadadr(obj) car(cdr(car(cdr(obj))))
+#define caddar(obj) car(cdr(cdr(car(obj))))
+#define cadddr(obj) car(cdr(cdr(cdr(obj))))
+#define cdaaar(obj) cdr(car(car(car(obj))))
+#define cdaadr(obj) cdr(car(car(cdr(obj))))
+#define cdadar(obj) cdr(car(cdr(car(obj))))
+#define cdaddr(obj) cdr(car(cdr(cdr(obj))))
+#define cddaar(obj) cdr(cdr(car(car(obj))))
+#define cddadr(obj) cdr(cdr(car(cdr(obj))))
+#define cdddar(obj) cdr(cdr(cdr(car(obj))))
+#define cddddr(obj) cdr(cdr(cdr(cdr(obj))))
+
 /* REPL - Read */
 
 bool is_delimiter(int c) {
@@ -92,6 +153,30 @@ void eat_whitespace(FILE *in) {
 		ungetc(c, in);
 		break;
 	}
+}
+
+//TODO:  Get rid of the hard exit in eat_expected_string
+
+void eat_expected_string(FILE *in, char *str) {
+    int c;
+
+    while (*str != '\0') {
+        c = getc(in);
+        if (c != *str) {
+            fprintf(stderr, "unexpected character '%c'\n", c);
+            exit(1);
+        }
+        str++;
+    }
+}
+
+//TODO:  Get rid of the hard exit in peek_expected_delimiter
+
+void peek_expected_delimiter(FILE *in) {
+    if (!is_delimiter(peek(in))) {
+        fprintf(stderr, "character not followed by delimiter\n");
+        exit(1);
+    }
 }
 
 void flush_input(FILE *in) {
@@ -177,6 +262,52 @@ object *read_character(FILE *in) {
 
 }
 
+/* Define forward reference */
+
+object *read(FILE *in);
+
+//TODO: Get rid of hard exits in read_pair
+
+object *read_pair(FILE *in) {
+
+    int c;
+    object *car_obj;
+    object *cdr_obj;
+    
+    eat_whitespace(in);
+    
+    c = getc(in);
+    if (c == ')') { /* read the empty list */
+        return make_empty();
+    }
+    ungetc(c, in);
+
+    car_obj = read(in);
+
+    eat_whitespace(in);
+    
+    c = getc(in);    
+    if (c == '.') { /* read improper list */
+        c = peek(in);
+        if (!is_delimiter(c)) {
+            fprintf(stderr, "dot not followed by delimiter\n");
+            exit(1);
+        }
+        cdr_obj = read(in);
+        eat_whitespace(in);
+        c = getc(in);
+        if (c != ')') {
+            fprintf(stderr,
+                    "where was the trailing right paren?\n");
+            exit(1);
+        }
+        return cons(car_obj, cdr_obj);
+    } else { /* read list */
+        ungetc(c, in);
+        cdr_obj = read_pair(in);        
+        return cons(car_obj, cdr_obj);
+    }
+}
 
 object *read(FILE *in) {
 
@@ -276,16 +407,7 @@ object *read(FILE *in) {
 
     } else if (c == '(') {
 
-    	eat_whitespace(in);
-
-        c = getc(in);
-
-        if (c == ')') {
-            return make_empty();
-        }
-
-        flush_input(in);
-        return make_error(13, "unexpected character inside an empty list");
+    	return read_pair(in);
 
 	} else {
 		flush_input(in);
@@ -301,6 +423,8 @@ object *read(FILE *in) {
 object *eval(object *exp) {
 	return exp;
 }
+
+/* REPL - Print */
 
 void expand_esc_seq(char str[], const char c) {
 
@@ -348,7 +472,27 @@ void expand_esc_seq(char str[], const char c) {
 	return;
 } // expand_esc_seq
 
-/* REPL - Print */
+/* Resolve forward reference to 'write' */
+
+void write(object *obj);
+
+void write_pair(object *pair) {
+    object *car_obj;
+    object *cdr_obj;
+    
+    car_obj = car(pair);
+    cdr_obj = cdr(pair);
+    write(car_obj);
+    if (cdr_obj->type == PAIR) {
+        printf(" ");
+        write_pair(cdr_obj);
+    } else if (cdr_obj->type == EMPTY_LIST) {
+        return;
+    } else {
+        printf(" . ");
+        write(cdr_obj);
+    }
+}
 
 void write(object *obj) {
 
@@ -369,6 +513,11 @@ void write(object *obj) {
 			break;
 		case FIXNUM:
 			printf("%ld", obj->data.fixnum.value);
+			break;
+		case PAIR:
+			printf("(");
+			write_pair(obj);
+			printf(")");
 			break;
 		case STRING:
 		    str = obj->data.string.value;
