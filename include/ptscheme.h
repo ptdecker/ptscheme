@@ -16,6 +16,7 @@ typedef enum {
 	CHARACTER,
 	EMPTY_LIST,
 	FIXNUM,
+	PAIR,
 	STRING,
 	ERROR
 } object_type;
@@ -35,6 +36,10 @@ typedef struct object {
 		struct {
 			long value;
 		} fixnum;
+		struct {
+			struct object *car;
+			struct object *cdr;
+		} pair;
 		struct {
 			char *value;
 		} string;

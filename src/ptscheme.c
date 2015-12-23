@@ -39,28 +39,7 @@
 #include "lispint.h"
 #include "lispstr.h"
 #include "lisperr.h"
-
-//TODO: Move empty list out into its own module once more list stuff is in here
-
-/* Empty List */
-
-object *make_empty() {
-
-	// The empty list is a singletons
-
-	static object *empty_list;
-
-	if (empty_list == NULL) {
-		empty_list = alloc_object();
-		empty_list->type = EMPTY_LIST;
-	}
-
-	return empty_list;
-}
-
-bool is_empty(object *obj) {
-	return (obj->type == EMPTY_LIST);
-}
+#include "lisppair.h"
 
 /* REPL - Read */
 
@@ -135,6 +114,7 @@ object *read_character(FILE *in) {
 	// Coming in here, we have already read the sequence:  #'
 
 	int c;
+    int trash;
 
 	c = getc(in);
 
@@ -172,11 +152,83 @@ object *read_character(FILE *in) {
 		return make_error(4, "character literal missing termination");
 	}
 
-	flush_input(in); // Dump the rest of the line
+	trash = getc(in); // eat the postfix single quote
 	return (make_character(c));
 
 }
 
+/* Define forward reference */
+
+object *read(FILE *in);
+
+object *read_pair(FILE *in) {
+
+    int c;
+    object *car_obj;
+    object *cdr_obj;
+    
+    // Tighten things up
+
+    eat_whitespace(in);
+
+    // Handle the empty list condition (where we immediately get our closed paren)
+
+    if (peek(in) == ')') {
+    	c = getc(in); // Eat the closed paren
+    	return make_empty();
+    }
+
+    // Recursively read the car portion of the pair
+
+    car_obj = read(in);
+
+    // Tighten things up
+
+    eat_whitespace(in);
+
+    // Handle an improper list
+
+    if (peek(in) == '.') {
+
+    	c = getc(in); // Eat the period
+
+    	// Check for a delimiter following the dot
+
+        c = peek(in);
+        if (!is_delimiter(c)) {
+        	flush_input(in);
+        	return make_error(34, "dot not followed by a delimiter");
+        }
+
+        // Recursively read the cdr portion of the pair
+
+        cdr_obj = read(in);
+
+        // Tighten up
+
+        eat_whitespace(in);
+
+        // Make sure we have our closed paren
+
+        c = getc(in);
+        if (c != ')') {
+        	flush_input(in);
+        	return make_error(35, "trailing right parenthesis is missing after dotted cdr");
+        }
+
+        // Then paste everything together
+
+        return cons(car_obj, cdr_obj);
+    }
+
+    // Recursively read the cdr portion of the pair
+
+    cdr_obj = read_pair(in);        
+
+    // Then pair them up with cons
+
+    return cons(car_obj, cdr_obj);
+}
 
 object *read(FILE *in) {
 
@@ -276,16 +328,7 @@ object *read(FILE *in) {
 
     } else if (c == '(') {
 
-    	eat_whitespace(in);
-
-        c = getc(in);
-
-        if (c == ')') {
-            return make_empty();
-        }
-
-        flush_input(in);
-        return make_error(13, "unexpected character inside an empty list");
+    	return read_pair(in);
 
 	} else {
 		flush_input(in);
@@ -301,6 +344,8 @@ object *read(FILE *in) {
 object *eval(object *exp) {
 	return exp;
 }
+
+/* REPL - Print */
 
 void expand_esc_seq(char str[], const char c) {
 
@@ -348,7 +393,27 @@ void expand_esc_seq(char str[], const char c) {
 	return;
 } // expand_esc_seq
 
-/* REPL - Print */
+/* Resolve forward reference to 'write' */
+
+void write(object *obj);
+
+void write_pair(object *pair) {
+    object *car_obj;
+    object *cdr_obj;
+    
+    car_obj = car(pair);
+    cdr_obj = cdr(pair);
+    write(car_obj);
+    if (cdr_obj->type == PAIR) {
+        printf(" ");
+        write_pair(cdr_obj);
+    } else if (cdr_obj->type == EMPTY_LIST) {
+        return;
+    } else {
+        printf(" . ");
+        write(cdr_obj);
+    }
+}
 
 void write(object *obj) {
 
@@ -369,6 +434,11 @@ void write(object *obj) {
 			break;
 		case FIXNUM:
 			printf("%ld", obj->data.fixnum.value);
+			break;
+		case PAIR:
+			printf("(");
+			write_pair(obj);
+			printf(")");
 			break;
 		case STRING:
 		    str = obj->data.string.value;
