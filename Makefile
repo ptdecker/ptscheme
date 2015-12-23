@@ -34,7 +34,7 @@ lisperr.o: ptscheme.h memmanager.h lisperr.h
 lisppair.o: ptscheme.h memmanager.h lisppair.h
 
 # clean - Implement standard 'clean' target to clean up after ourselves
-	
+
 .PHONY: clean
 clean:
 	rm -f ptscheme $(objects)
