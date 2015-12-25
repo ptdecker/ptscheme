@@ -29,5 +29,6 @@ static namelist *hashtable[HASHSIZE];
 unsigned genhashkey(const char *s);
 extern namelist *hashget(const char *key);
 extern namelist *hashput(const char *key, const char *value);
+extern void hashdump();
 
 #endif // !FILE_HASHTABLE_SEEN
