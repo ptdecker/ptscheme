@@ -18,6 +18,7 @@ typedef enum {
     FIXNUM,
     PAIR,
     STRING,
+    SYMBOL,
     ERROR
 } object_type;
 
@@ -43,6 +44,9 @@ typedef struct object {
         struct {
             char *value;
         } string;
+        struct {
+            struct namelist *element;
+        } symbol;
         struct {
             long error_num;
             char *error_msg;

@@ -34,3 +34,5 @@
 # Miscellaneous
 *.swp
 ptscheme
+
+testsuite

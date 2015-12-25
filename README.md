@@ -17,10 +17,17 @@ The following changes have been made from Michaux:
 * Implemented characters using C-style character literals
 * Included support for all C-style escape sequences except for octal and hex
 * Echoed the way the singleton boolean was handled for singleton empty
+* Implemented hash table-based symbol table [O(1)] as opposed to reusing pairs approach [O(n)]
 
 Build:
 
     $ make
+
+Test (not full coverage):
+
+    $ make clean
+    $ make
+    $ make test
 
 Run:
 
