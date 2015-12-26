@@ -1,31 +1,5 @@
-/*
- * A basic implementation of Scheme in 'C'
- *
- * LICENSE INFO
- * ------------
- *
- * The licensed libraries used by this project are:
- *    - Brian Fox's GNU Readline under GPL v3 (now maintained by Chet Ramey)
- *           c.f. http://cnswww.cns.cwru.edu/php/chet/readline/rltop.html
- *
- * This applicaiton is based partially upon the shoulders of:
- *    - Daniel Holden's MPC under BSD3
- *           c.f. http://buildyourownlisp.com/
- *           c.f. https://github.com/orangeduck/BuildYourOwnLisp
- *    - Peter Michaux's "Scheme from Scratch"
- *           c.f. http://peter.michaux.ca/articles/scheme-from-scratch-introduction
- *           c.f. https://github.com/petermichaux/bootstrap-scheme
- *          - Changes from the Michaux version:
- *              - Inclusion of an error type so that malformed input doesn't kill the app
- *              - Handled the singleton boolean object type differently to parallel other objects
- *              - Implemented characters using C-style character literals
- *              - Included support for all C-style escape sequences except for octal and hex
- *              - Echoed the way the singleton boolean was handled for singleton empty
- *
- * Due to the inclusion of GNU Readline, this project is also licensed under GPL v3
- */
-
-/* Define directives */
+/* replread.c */
+/* REPL - Read */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,10 +17,6 @@
 #include "hashtable.h"
 #include "symbols.h"
 #include "replread.h"
-
-/* REPL - Read */
-
-/*
 
 bool is_delimiter(int c) {
     return (isspace(c) ||
@@ -168,8 +138,6 @@ object *read_character(FILE *in) {
     return (make_character(c));
 
 }
-
-object *read(FILE *in);
 
 object *read_pair(FILE *in) {
 
@@ -385,145 +353,4 @@ object *read(FILE *in) {
     flush_input(in);
     fprintf(stderr, "read illegal state\n");
     exit(EXIT_FAILURE);
-}
-
-*/
-
-/* REPL - Evaluate */
-
-object *eval(object *exp) {
-    return exp;
-}
-
-/* REPL - Print */
-
-void expand_esc_seq(char str[], const char c) {
-
-    switch (c) {
-        case '\0':  // Null
-            strcat(str, "NULL");
-            break;
-        case '\a':  // Alarm (Beep, bell character)
-            strcat(str, "\\a");
-            break;
-        case '\b':  // Backspace
-            strcat(str, "\\b");
-            break;
-        case '\f':  // Formfeed
-            strcat(str, "\\f");
-            break;
-        case '\n':  // Newline (Linefeed)
-            strcat(str, "\\n");
-            break;
-        case '\r':  // Carriage return
-            strcat(str, "\\r");
-            break;
-        case '\t':  // Tab
-            strcat(str, "\\t");
-            break;
-        case '\v':  // Vertical tab
-            strcat(str, "\\v");
-            break;
-        case '\\': // Backslash
-            strcat(str, "\\\\");
-            break;
-        case '\'': // Single quote
-            strcat(str, "\\'");
-            break;
-        case '\"':  // Double quote
-            strcat(str, "\\\"");
-            break;
-        case '\?':  // Question mark
-            strcat(str, "\\?");
-            break;
-        default:
-            str[0] = c;
-            str[1] = '\0';
-    } // switch
-    return;
-} // expand_esc_seq
-
-/* Resolve forward reference to 'write' */
-
-void write(object *obj);
-
-void write_pair(object *pair) {
-    object *car_obj;
-    object *cdr_obj;
-
-    car_obj = car(pair);
-    cdr_obj = cdr(pair);
-    write(car_obj);
-    if (cdr_obj->type == PAIR) {
-        printf(" ");
-        write_pair(cdr_obj);
-    } else if (cdr_obj->type == EMPTY_LIST)
-        return;
-    else {
-        printf(" . ");
-        write(cdr_obj);
-    }
-}
-
-void write(object *obj) {
-
-    char *str  = NULL;
-    char str2[5];
-
-    switch (obj->type) {
-        case BOOLEAN:
-            printf("#%c", is_false(obj) ? 'f' : 't');
-            break;
-        case CHARACTER:
-            str2[0] = '\0';
-            expand_esc_seq(str2, obj->data.character.value);
-            printf("#'%s'", str2);
-            break;
-        case EMPTY_LIST:
-            printf("()");
-            break;
-        case FIXNUM:
-            printf("%ld", obj->data.fixnum.value);
-            break;
-        case PAIR:
-            printf("(");
-            write_pair(obj);
-            printf(")");
-            break;
-        case STRING:
-            str = obj->data.string.value;
-            putchar('"');
-            while (*str != '\0') {
-                str2[0] = '\0';
-                expand_esc_seq(str2, *str);
-                printf("%s", str2);
-                str++;
-            }
-            putchar('"');
-            break;
-        case SYMBOL:
-            printf("%s", obj->data.symbol.element->key);
-            hashdump();
-            break;
-        case ERROR:
-            printf("Error %ld: %s", obj->data.error.error_num, obj->data.error.error_msg);
-            break;
-        default:
-            fprintf(stderr, "cannot write unknown type\n");
-            exit(EXIT_FAILURE);
-    } // switch
-
-} // write()
-
-/* REPL */
-
-int main(void) {
-    printf("ptscheme v0.0.1\n");
-    printf("Ctrl-c to exit\n\n");
-    while(true) {
-        printf("> ");
-        write(eval(read(stdin)));
-        printf("\n");
-    }
-    return EXIT_SUCCESS;
 }

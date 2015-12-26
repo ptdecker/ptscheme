@@ -10,7 +10,8 @@ vpath %.h include
 CC = clang
 CPPFLAGS = -std=c99 -Wall -g -I include
 objects = ptscheme.o memmanager.o lispbool.o lispchar.o lispint.o \
-          lispstr.o lisperr.o lisppair.o hashtable.o
+          lispstr.o lisperr.o lisppair.o hashtable.o symbols.o \
+          replread.o
 testedlibs = hashtable.o
 tests = hashtabletest.o
 
@@ -40,7 +41,13 @@ lisppair.o: ptscheme.h memmanager.h lisppair.h
 
 hashtable.o:
 
+symbols.o: ptscheme.h memmanager.h symbols.h hashtable.h
+
+replread.o: ptscheme.h memmanager.h symbols.h lispbool.h lispchar.h lispint.h lispstr.h lisperr.h lisppair.h symbols.h
+
 hashtabletest.o: hashtable.h
+
+
 	clang $(CPPFLAGS) -c -o hashtabletest.o tests/hashtabletest.c
 
 # test - Implement test target
