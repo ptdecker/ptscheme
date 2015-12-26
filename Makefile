@@ -11,7 +11,7 @@ CC = clang
 CPPFLAGS = -std=c99 -Wall -g -I include
 objects = ptscheme.o memmanager.o lispbool.o lispchar.o lispint.o \
           lispstr.o lisperr.o lisppair.o hashtable.o symbols.o \
-          replread.o
+          replread.o repleval.o replprint.o
 testedlibs = hashtable.o
 tests = hashtabletest.o
 
@@ -23,31 +23,33 @@ ptscheme: $(objects)
 testsuite: $(tests)
 	clang $(tests) $(testedlibs) -o testsuite
 
-ptscheme.o: ptscheme.h memmanager.h
+ptscheme.o:
 
-memmanager.o: ptscheme.h memmanager.h
+memmanager.o:
 
-lispbool.o: ptscheme.h memmanager.h lispbool.h
+lispbool.o:
 
-lispchar.o: ptscheme.h memmanager.h lispchar.h
+lispchar.o:
 
-lispint.o: ptscheme.h memmanager.h lispint.h
+lispint.o:
 
-lispstr.o: ptscheme.h memmanager.h lispstr.h
+lispstr.o:
 
-lisperr.o: ptscheme.h memmanager.h lisperr.h
+lisperr.o:
 
-lisppair.o: ptscheme.h memmanager.h lisppair.h
+lisppair.o:
 
 hashtable.o:
 
-symbols.o: ptscheme.h memmanager.h symbols.h hashtable.h
+symbols.o:
 
-replread.o: ptscheme.h memmanager.h symbols.h lispbool.h lispchar.h lispint.h lispstr.h lisperr.h lisppair.h symbols.h
+replread.o:
 
-hashtabletest.o: hashtable.h
+repleval.o:
 
+replprint.o:
 
+hashtabletest.o:
 	clang $(CPPFLAGS) -c -o hashtabletest.o tests/hashtabletest.c
 
 # test - Implement test target
