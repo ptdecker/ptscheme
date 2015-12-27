@@ -35,12 +35,13 @@ char is_symbol(object *obj) {
     return obj->type == SYMBOL;
 }
 
-object *make_quote() {
+object *quote_symbol() {
 
-    static object *empty_symbol = NULL;
+    static object *_quote_symbol = NULL;
 
-    if (empty_symbol == NULL)
-        empty_symbol = make_symbol("quote");
+    if (_quote_symbol == NULL)
+        _quote_symbol = make_symbol("quote");
 
-    return empty_symbol;
+    return _quote_symbol;
 }
+

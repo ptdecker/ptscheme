@@ -9,18 +9,18 @@
 
 /* Empty List */
 
-object *make_empty() {
+object *empty_list() {
 
     // The empty list is a singletons
 
-    static object *empty_list = NULL;
+    static object *_empty_list = NULL;
 
-    if (empty_list == NULL) {
-        empty_list = alloc_object();
-        empty_list->type = EMPTY_LIST;
+    if (_empty_list == NULL) {
+        _empty_list = alloc_object();
+        _empty_list->type = EMPTY_LIST;
     }
 
-    return empty_list;
+    return _empty_list;
 }
 
 bool is_empty(object *obj) {

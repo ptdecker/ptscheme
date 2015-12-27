@@ -5,7 +5,7 @@
 
 /* Empty List   */
 
-extern object *make_empty();
+extern object *empty_list();
 extern bool is_empty(object *obj);
 
 /* Pair */

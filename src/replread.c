@@ -152,7 +152,7 @@ object *read_pair(FILE *in) {
 
     if (peek(in) == ')') {
         c = getc(in); // Eat the closed paren
-        return make_empty();
+        return empty_list();
     }
 
     // Recursively read the car portion of the pair
@@ -348,7 +348,7 @@ object *read(FILE *in) {
     }
 
     if (c == '\'') {
-        return cons(make_quote(), cons(read(in), make_empty()));
+        return cons(quote_symbol(), cons(read(in), empty_list()));
     }
 
     // We should have handled everything by now, if not then illegal state

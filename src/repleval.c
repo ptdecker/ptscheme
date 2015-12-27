@@ -43,7 +43,7 @@ char is_tagged_list(object *expression, object *tag) {
 }
 
 char is_quoted(object *expression) {
-    return is_tagged_list(expression, make_quote());
+    return is_tagged_list(expression, quote_symbol());
 }
 
 object *text_of_quotation(object *exp) {
