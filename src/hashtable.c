@@ -10,11 +10,6 @@
 #include <stdio.h>
 #include "hashtable.h"
 
-/**
- * Create a hash key based upon a string
- * @param  s String upon which hash key should be based
- * @return   Unsigned integer hash key
- */
 unsigned genhashkey(const char *s) {
 
     unsigned hashval;
@@ -26,61 +21,48 @@ unsigned genhashkey(const char *s) {
 
 } // genhashkey()
 
-/**
- * Look up a key-value pair from the hash table
- * @param  s value to find
- * @return   pointer to stored value (NULL == not found)
- */
-namelist *hashget(const char *key) {
+object *hashget(const char *key) {
 
     namelist *np;
 
     for (np = hashtable[genhashkey(key)]; np != NULL; np = np->next)
         if (strcmp(key, np->key) == 0)
-            return np;
+            return np->value;
 
     return NULL;
 }
 
-namelist *hashput(const char *key, const char *value) {
+void hashpost(const char *key, object *value) {
 
     namelist *np;
     unsigned hashval;
 
-    if ((np = hashget(key)) == NULL) {
-
-        // Key not found, entry not in hash table -- Add it
-
-        np = (namelist *) malloc(sizeof(*np));
-        if ((np == NULL) || ((np->key = strdup(key)) == NULL)) {
-            fprintf(stderr, "Out of memory\n");
-            exit(EXIT_FAILURE);
-        }
-
-        hashval = genhashkey(key);
-        np->next = hashtable[hashval];
-        hashtable[hashval] = np;
-
-    } else {
-
-        // Key found -- free previous value
-
-        free((void *) np->value);
+    np = (namelist *)malloc(sizeof(*np));
+    if (np == NULL) {
+        fprintf(stderr, "Out of memory\n");
+        exit(EXIT_FAILURE);
     }
 
-    if ((np->value = strdup(value)) == NULL) {
-            fprintf(stderr, "Out of memory\n");
-            exit(EXIT_FAILURE);
+    np->key = strdup(key);
+    if (np->key == NULL) {
+        fprintf(stderr, "Out of memory\n");
+        exit (EXIT_FAILURE);
     }
 
-    return np;
+    np->value = value;
+
+    hashval = genhashkey(key);
+    np->next = hashtable[hashval];
+    hashtable[hashval] = np;
+
+    return;
 }
 
 void hashdump() {
     int i;
     namelist *np;
-    printf("\nHash table dump:\n");
+    printf("\nhash table\n");
     for (i = 0; i < HASHSIZE; i++)
         for (np = hashtable[i]; np != NULL; np = np->next)
-            printf("\t%s: %s\n", np->key, np->value);
+            printf("\t%s\n", np->value->data.symbol.value);
 }

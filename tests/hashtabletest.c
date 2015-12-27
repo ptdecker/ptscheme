@@ -8,14 +8,44 @@
 #include <string.h>
 #include <ctype.h>
 #include "hashtable.h"
+#include "ptscheme.h"
+#include "memmanager.h"
 
 namelist *results;
+object *obj1
+object *obj2
+
+//TODO: Add back in hash table test script
 
 int main(void) {
+
+/*
     printf("testing hashtable.c ...\n");
 
+    printf("allocating test object 1...");
+    obj1 = alloc_object();
+    obj1->type = SYMBOL;
+    obj1->data.symbol.value = malloc(strlen("TEST 1") + 1);
+    if (obj1->data.symbol.value == NULL) {
+        printf("failed\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("success\n");
+    strcpy(obj->data.symbol.value, "TEST 1");
+
+    printf("allocating test object 2...");
+    obj2 = alloc_object();
+    obj2->type = SYMBOL;
+    obj2->data.symbol.value = malloc(strlen("TEST 2") + 1);
+    if (obj2->data.symbol.value == NULL) {
+        printf("failed\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("success\n");
+    strcpy(obj2->data.symbol.value, "TEST 2");
+
     printf("\tcreating entry with key 'A'...");
-    results = hashput("A","data for A");
+    results = hashadd("A", obj1);
     printf("(key: %s, value: %s)...", results->key, results->value);
     if (results != NULL && strcmp(results->key, "A") == 0 && strcmp(results->value, "data for A") == 0)
         printf("success\n");
@@ -84,4 +114,5 @@ int main(void) {
     }
 
     return EXIT_SUCCESS;
+*/
 }

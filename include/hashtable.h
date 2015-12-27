@@ -9,6 +9,8 @@
 
 #define HASHSIZE    101
 
+#include "ptscheme.h"
+
 /**
  * Single linked list of key-value pointer pairs
  */
@@ -16,7 +18,7 @@
 typedef struct namelist {
     struct namelist *next;  // next list entry
     char   *key;   // key
-    char   *value; // value
+    object *value; // value
 } namelist;
 
 /**
@@ -27,8 +29,8 @@ static namelist *hashtable[HASHSIZE];
 
 
 unsigned genhashkey(const char *s);
-extern namelist *hashget(const char *key);
-extern namelist *hashput(const char *key, const char *value);
+extern object *hashget(const char *key);
+extern void hashpost(const char *key, object *value);
 extern void hashdump();
 
 #endif // !FILE_HASHTABLE_SEEN
