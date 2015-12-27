@@ -34,3 +34,13 @@ object *make_symbol(char *value) {
 char is_symbol(object *obj) {
     return obj->type == SYMBOL;
 }
+
+object *make_quote() {
+
+    static object *empty_symbol = NULL;
+
+    if (empty_symbol == NULL)
+        empty_symbol = make_symbol("quote");
+
+    return empty_symbol;
+}

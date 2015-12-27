@@ -13,7 +13,7 @@ object *make_empty() {
 
     // The empty list is a singletons
 
-    static object *empty_list;
+    static object *empty_list = NULL;
 
     if (empty_list == NULL) {
         empty_list = alloc_object();

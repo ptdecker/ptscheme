@@ -5,5 +5,6 @@
 
 extern object *make_symbol(char *value);
 extern char is_symbol(object *obj);
+extern object *make_quote();
 
 #endif // FILE_SYMBOLS_SEEN

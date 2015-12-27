@@ -12,8 +12,8 @@
 #include "memmanager.h"
 
 namelist *results;
-object *obj1
-object *obj2
+object *obj1;
+object *obj2;
 
 //TODO: Add back in hash table test script
 
