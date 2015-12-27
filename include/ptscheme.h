@@ -45,7 +45,7 @@ typedef struct object {
             char *value;
         } string;
         struct {
-            struct namelist *element;
+            char *value;
         } symbol;
         struct {
             long error_num;

@@ -14,7 +14,6 @@
 #include "lispstr.h"
 #include "lisperr.h"
 #include "lisppair.h"
-#include "hashtable.h"
 #include "symbols.h"
 #include "replread.h"
 
@@ -346,6 +345,10 @@ object *read(FILE *in) {
 
         return make_error(41, "symbol not followed by a delimiter");
 
+    }
+
+    if (c == '\'') {
+        return cons(make_quote(), cons(read(in), make_empty()));
     }
 
     // We should have handled everything by now, if not then illegal state

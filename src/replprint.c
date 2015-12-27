@@ -118,8 +118,7 @@ void write(object *obj) {
             putchar('"');
             break;
         case SYMBOL:
-            printf("%s", obj->data.symbol.element->key);
-            hashdump();
+            printf("%s", obj->data.symbol.value);
             break;
         case ERROR:
             printf("Error %ld: %s", obj->data.error.error_num, obj->data.error.error_msg);
