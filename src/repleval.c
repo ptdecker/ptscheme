@@ -28,6 +28,7 @@ char is_self_evaluating(object *exp) {
     return is_boolean(exp)   ||
            is_fixnum(exp)    ||
            is_character(exp) ||
+           is_empty(exp)     ||
            is_string(exp);
 }
 
@@ -50,16 +51,15 @@ object *text_of_quotation(object *exp) {
 }
 
 object *eval(object *exp) {
+
     if (is_self_evaluating(exp)) {
         return exp;
     }
-    else if (is_quoted(exp)) {
+
+    if (is_quoted(exp)) {
         return text_of_quotation(exp);
     }
-    else {
-        fprintf(stderr, "cannot eval unknown expression type\n");
-        exit(1);
-    }
-    fprintf(stderr, "eval illegal state\n");
-    exit(1);
+
+    fprintf(stderr, "cannot eval unknown expression type\n");
+    exit(EXIT_FAILURE);
 }
