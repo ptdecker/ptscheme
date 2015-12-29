@@ -59,11 +59,13 @@ char is_assignment(object *exp) {
 }
 
 object *assignment_variable(object *exp) {
-    return car(cdr(exp));
+//    return car(cdr(exp));
+    return cadr(exp);
 }
 
 object *assignment_value(object *exp) {
-    return car(cdr(cdr(exp)));
+//    return car(cdr(cdr(exp)));
+    return caddr(exp);
 }
 
 char is_definition(object *exp) {

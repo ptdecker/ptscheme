@@ -36,6 +36,7 @@
 #include "replprint.h"
 
 #include "lisppair.h"
+#include "lisperr.h"
 
 /* Environments */
 
@@ -88,10 +89,11 @@ object *lookup_variable_value(object *var, object *env) {
         }
         env = enclosing_environment(env);
     }
-    fprintf(stderr, "unbound variable\n");
-    exit(EXIT_FAILURE);
+    return make_error(50, "unbound variable");
 }
 
+
+//TODO: set_variable_value needs to soft receover
 void set_variable_value(object *var, object *val, object *env) {
     object *frame;
     object *vars;
