@@ -59,10 +59,7 @@ void expand_esc_seq(char str[], const char c) {
     return;
 } // expand_esc_seq
 
-/* Resolve forward reference to 'write' */
-
-void write(object *obj);
-
+// TODO: The code below smells
 void write_pair(object *pair) {
     object *car_obj;
     object *cdr_obj;

@@ -32,6 +32,10 @@ char is_self_evaluating(object *exp) {
            is_string(exp);
 }
 
+char is_variable(object *expression) {
+    return is_symbol(expression);
+}
+
 char is_tagged_list(object *expression, object *tag) {
     object *the_car;
 
@@ -50,15 +54,58 @@ object *text_of_quotation(object *exp) {
     return cadr(exp);
 }
 
-object *eval(object *exp) {
+char is_assignment(object *exp) {
+    return is_tagged_list(exp, set_symbol());
+}
 
-    if (is_self_evaluating(exp)) {
+object *assignment_variable(object *exp) {
+//    return car(cdr(exp));
+    return cadr(exp);
+}
+
+object *assignment_value(object *exp) {
+//    return car(cdr(cdr(exp)));
+    return caddr(exp);
+}
+
+char is_definition(object *exp) {
+    return is_tagged_list(exp, define_symbol());
+}
+
+object *definition_variable(object *exp) {
+    return cadr(exp);
+}
+
+object *definition_value(object *exp) {
+    return caddr(exp);
+}
+
+object *eval_assignment(object *exp, object *env) {
+    set_variable_value(assignment_variable(exp), eval(assignment_value(exp), env), env);
+    return ok_symbol();
+}
+
+object *eval_definition(object *exp, object *env) {
+    define_variable(definition_variable(exp), eval(definition_value(exp), env), env);
+    return ok_symbol();
+}
+
+object *eval(object *exp, object *env) {
+
+    if (is_self_evaluating(exp))
         return exp;
-    }
 
-    if (is_quoted(exp)) {
+    if (is_variable(exp))
+        return lookup_variable_value(exp, env);
+
+    if (is_quoted(exp))
         return text_of_quotation(exp);
-    }
+
+    if (is_assignment(exp))
+        return eval_assignment(exp, env);
+
+    if (is_definition(exp))
+        return eval_definition(exp, env);
 
     fprintf(stderr, "cannot eval unknown expression type\n");
     exit(EXIT_FAILURE);
