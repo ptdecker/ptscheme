@@ -63,13 +63,6 @@ object *frame_values(object *frame) {
 }
 
 void add_binding_to_frame(object *var, object *val, object *frame) {
-    printf("adding binding:\n");
-    printf("\tvar: ");
-    write(var);
-    printf("\n");
-    printf("\tval: ");
-    write(val);
-    printf("\n");
     set_car(frame, cons(var, car(frame)));
     set_cdr(frame, cons(val, cdr(frame)));
 }
@@ -82,10 +75,6 @@ object *lookup_variable_value(object *var, object *env) {
     object *frame;
     object *vars;
     object *vals;
-printf("looking up varialbe value\n");
-printf("\tvar: ");
-write(var);
-printf("\n");
     while (!is_empty(env)) {
         frame = first_frame(env);
         vars  = frame_variables(frame);
@@ -149,10 +138,8 @@ void define_variable(object *var, object *val, object *env) {
 object *setup_environment(void) {
     object *initial_env;
 
-    initial_env = extend_environment(
-                      empty_list(),
-                      empty_list(),
-                      the_empty_environment);
+    initial_env = extend_environment(empty_list(), empty_list(), the_empty_environment);
+
     return initial_env;
 }
 

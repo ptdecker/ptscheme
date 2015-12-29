@@ -59,10 +59,7 @@ void expand_esc_seq(char str[], const char c) {
     return;
 } // expand_esc_seq
 
-/* Resolve forward reference to 'write' */
-
-void write(object *obj);
-
+// TODO: The code below smells
 void write_pair(object *pair) {
     object *car_obj;
     object *cdr_obj;
@@ -88,28 +85,27 @@ void write(object *obj) {
 
     switch (obj->type) {
         case BOOLEAN:
-            printf("(BOOL) #%c", is_false(obj) ? 'f' : 't');
+            printf("#%c", is_false(obj) ? 'f' : 't');
             break;
         case CHARACTER:
             str2[0] = '\0';
             expand_esc_seq(str2, obj->data.character.value);
-            printf("(CHAR) #'%s'", str2);
+            printf("#'%s'", str2);
             break;
         case EMPTY_LIST:
-            printf("(ELIST) ()");
+            printf("()");
             break;
         case FIXNUM:
-            printf("(FIXNUM) %ld", obj->data.fixnum.value);
+            printf("%ld", obj->data.fixnum.value);
             break;
         case PAIR:
-            printf("(PAIR) (");
+            printf("(");
             write_pair(obj);
             printf(")");
             break;
         case STRING:
             str = obj->data.string.value;
-            printf("(STR) \"");
-//            putchar('"');
+            putchar('"');
             while (*str != '\0') {
                 str2[0] = '\0';
                 expand_esc_seq(str2, *str);
@@ -119,7 +115,7 @@ void write(object *obj) {
             putchar('"');
             break;
         case SYMBOL:
-            printf("(SYM) %s", obj->data.symbol.value);
+            printf("%s", obj->data.symbol.value);
             break;
         case ERROR:
             printf("Error %ld: %s", obj->data.error.error_num, obj->data.error.error_msg);

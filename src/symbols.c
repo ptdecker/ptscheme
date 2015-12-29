@@ -29,9 +29,6 @@ object *make_symbol(char *value) {
     // endif
     }
     // return object
-printf("returning object: ");
-write(obj);
-printf("\n");
     return obj;
 }
 
