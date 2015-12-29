@@ -88,27 +88,28 @@ void write(object *obj) {
 
     switch (obj->type) {
         case BOOLEAN:
-            printf("#%c", is_false(obj) ? 'f' : 't');
+            printf("(BOOL) #%c", is_false(obj) ? 'f' : 't');
             break;
         case CHARACTER:
             str2[0] = '\0';
             expand_esc_seq(str2, obj->data.character.value);
-            printf("#'%s'", str2);
+            printf("(CHAR) #'%s'", str2);
             break;
         case EMPTY_LIST:
-            printf("()");
+            printf("(ELIST) ()");
             break;
         case FIXNUM:
-            printf("%ld", obj->data.fixnum.value);
+            printf("(FIXNUM) %ld", obj->data.fixnum.value);
             break;
         case PAIR:
-            printf("(");
+            printf("(PAIR) (");
             write_pair(obj);
             printf(")");
             break;
         case STRING:
             str = obj->data.string.value;
-            putchar('"');
+            printf("(STR) \"");
+//            putchar('"');
             while (*str != '\0') {
                 str2[0] = '\0';
                 expand_esc_seq(str2, *str);
@@ -118,7 +119,7 @@ void write(object *obj) {
             putchar('"');
             break;
         case SYMBOL:
-            printf("%s", obj->data.symbol.value);
+            printf("(SYM) %s", obj->data.symbol.value);
             break;
         case ERROR:
             printf("Error %ld: %s", obj->data.error.error_num, obj->data.error.error_msg);

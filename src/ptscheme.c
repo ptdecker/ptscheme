@@ -35,14 +35,141 @@
 #include "repleval.h"
 #include "replprint.h"
 
+#include "lisppair.h"
+
+/* Environments */
+
+object *the_empty_environment;
+object *the_global_environment;
+
+object *enclosing_environment(object *env) {
+    return cdr(env);
+}
+
+object *first_frame(object *env) {
+    return car(env);
+}
+
+object *make_frame(object *variables, object *values) {
+    return cons(variables, values);
+}
+
+object *frame_variables(object *frame) {
+    return car(frame);
+}
+
+object *frame_values(object *frame) {
+    return cdr(frame);
+}
+
+void add_binding_to_frame(object *var, object *val, object *frame) {
+    printf("adding binding:\n");
+    printf("\tvar: ");
+    write(var);
+    printf("\n");
+    printf("\tval: ");
+    write(val);
+    printf("\n");
+    set_car(frame, cons(var, car(frame)));
+    set_cdr(frame, cons(val, cdr(frame)));
+}
+
+object *extend_environment(object *vars, object *vals, object *base_env) {
+    return cons(make_frame(vars, vals), base_env);
+}
+
+object *lookup_variable_value(object *var, object *env) {
+    object *frame;
+    object *vars;
+    object *vals;
+printf("looking up varialbe value\n");
+printf("\tvar: ");
+write(var);
+printf("\n");
+    while (!is_empty(env)) {
+        frame = first_frame(env);
+        vars  = frame_variables(frame);
+        vals  = frame_values(frame);
+        while (!is_empty(vars)) {
+            if (var == car(vars)) {
+                return car(vals);
+            }
+            vars = cdr(vars);
+            vals = cdr(vals);
+        }
+        env = enclosing_environment(env);
+    }
+    fprintf(stderr, "unbound variable\n");
+    exit(EXIT_FAILURE);
+}
+
+void set_variable_value(object *var, object *val, object *env) {
+    object *frame;
+    object *vars;
+    object *vals;
+
+    while (!is_empty(env)) {
+        frame = first_frame(env);
+        vars = frame_variables(frame);
+        vals = frame_values(frame);
+        while (!is_empty(vars)) {
+            if (var == car(vars)) {
+                set_car(vals, val);
+                return;
+            }
+            vars = cdr(vars);
+            vals = cdr(vals);
+        }
+        env = enclosing_environment(env);
+    }
+    fprintf(stderr, "unbound variable\n");
+    exit(EXIT_FAILURE);
+}
+
+void define_variable(object *var, object *val, object *env) {
+    object *frame;
+    object *vars;
+    object *vals;
+
+    frame = first_frame(env);
+    vars = frame_variables(frame);
+    vals = frame_values(frame);
+
+    while (!empty_list(vars)) {
+        if (var == car(vars)) {
+            set_car(vals, val);
+            return;
+        }
+        vars = cdr(vars);
+        vals = cdr(vals);
+    }
+    add_binding_to_frame(var, val, frame);
+}
+
+object *setup_environment(void) {
+    object *initial_env;
+
+    initial_env = extend_environment(
+                      empty_list(),
+                      empty_list(),
+                      the_empty_environment);
+    return initial_env;
+}
+
+void init(void) {
+    the_empty_environment  = empty_list();
+    the_global_environment = setup_environment();
+}
+
 /* REPL */
 
 int main(void) {
+    init();
     printf("ptscheme v0.0.1\n");
     printf("Ctrl-c to exit\n\n");
     while(true) {
         printf("> ");
-        write(eval(read(stdin)));
+        write(eval(read(stdin), the_global_environment));
         printf("\n");
     }
     exit(EXIT_SUCCESS);

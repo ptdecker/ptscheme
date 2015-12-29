@@ -7,6 +7,7 @@
 #include "ptscheme.h"
 #include "memmanager.h"
 #include "hashtable.h"
+#include "replprint.h"
 
 object *make_symbol(char *value) {
     object *obj;
@@ -28,6 +29,9 @@ object *make_symbol(char *value) {
     // endif
     }
     // return object
+printf("returning object: ");
+write(obj);
+printf("\n");
     return obj;
 }
 
@@ -43,5 +47,37 @@ object *quote_symbol() {
         _quote_symbol = make_symbol("quote");
 
     return _quote_symbol;
+}
+
+object *define_symbol() {
+
+    static object *_define_symbol = NULL;
+
+    if (_define_symbol == NULL)
+        _define_symbol = make_symbol("define");
+
+    return _define_symbol;
+}
+
+object *set_symbol() {
+
+
+    static object *_set_symbol = NULL;
+
+    if (_set_symbol == NULL)
+        _set_symbol = make_symbol("set!");
+
+    return _set_symbol;
+}
+
+object *ok_symbol() {
+
+
+    static object *_ok_symbol = NULL;
+
+    if (_ok_symbol == NULL)
+        _ok_symbol = make_symbol("ok");
+
+    return _ok_symbol;
 }
 

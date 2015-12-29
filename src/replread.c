@@ -340,6 +340,7 @@ object *read(FILE *in) {
         if (is_delimiter(c)) {
             buffer[i] = '\0';
             ungetc(c, in);
+printf("calling make symbol with buffer: %s\n", buffer);
             return make_symbol(buffer);
         }
 
