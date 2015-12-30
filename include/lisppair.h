@@ -20,6 +20,7 @@ extern object *cdr(object *pair);
 extern void set_cdr(object *obj, object* value);
 
 /* Syntactic Sugar for the car and cdr nested variants */
+// Uncomment ones as needed
 
 //#define caar(obj)   car(car(obj))
 #define cadr(obj)   car(cdr(obj))

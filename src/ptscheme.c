@@ -21,6 +21,7 @@
  *              - Implemented characters using C-style character literals
  *              - Included support for all C-style escape sequences except for octal and hex
  *              - Echoed the way the singleton boolean was handled for singleton empty
+ *              - Continued the patern for define and set
  *
  * Due to the inclusion of GNU Readline, this project is also licensed under GPL v3
  */
@@ -91,7 +92,6 @@ object *lookup_variable_value(object *var, object *env) {
     }
     return make_error(50, "unbound variable");
 }
-
 
 //TODO: set_variable_value needs to soft receover
 void set_variable_value(object *var, object *val, object *env) {

@@ -264,6 +264,8 @@ object *read(FILE *in) {
         }
 
         // Should never reach here
+        fprintf(stderr, "invalid state\n");
+        exit(EXIT_FAILURE);
 
     }
 
