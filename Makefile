@@ -8,7 +8,7 @@ vpath %.c src
 vpath %.h include
 
 CC = clang
-CPPFLAGS = -std=c99 -Wall -g -I include
+CPPFLAGS = -std=c99 -Wall -g --target=x86_64-apple-darwin14.5.0 -I include
 objects = ptscheme.o memmanager.o lispbool.o lispchar.o lispint.o \
           lispstr.o lisperr.o lisppair.o hashtable.o symbols.o \
           replread.o repleval.o replprint.o environments.o \
