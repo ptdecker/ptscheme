@@ -58,6 +58,7 @@ void hashpost(const char *key, object *value) {
     return;
 }
 
+//TODO: Remove hashdump()--it's just included for debugging purposes
 void hashdump() {
     int i;
     namelist *np;

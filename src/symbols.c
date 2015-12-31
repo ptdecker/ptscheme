@@ -58,7 +58,6 @@ object *define_symbol() {
 
 object *set_symbol() {
 
-
     static object *_set_symbol = NULL;
 
     if (_set_symbol == NULL)
@@ -69,7 +68,6 @@ object *set_symbol() {
 
 object *ok_symbol() {
 
-
     static object *_ok_symbol = NULL;
 
     if (_ok_symbol == NULL)
@@ -77,4 +75,15 @@ object *ok_symbol() {
 
     return _ok_symbol;
 }
+
+object *if_symbol() {
+
+    static object *_if_symbol = NULL;
+
+    if (_if_symbol == NULL)
+        _if_symbol = make_symbol("if");
+
+    return _if_symbol;
+}
+
 

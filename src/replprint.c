@@ -1,5 +1,4 @@
 /* replread.c */
-/* REPL - Read */
 
 #include <stdio.h>
 #include <stdlib.h>

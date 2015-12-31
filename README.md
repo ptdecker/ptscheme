@@ -1,9 +1,13 @@
 ptscheme
 ========
 
+### Overview
+
 My take on a Scheme dialect LISP implementation realized in 'C' with enough functionality to
 complete the excercises in the Purple Wizard book, "Structure and Interpretation
 of Computer Programs"
+
+### Implementation notes and credits
 
 This implementation of Scheme draws heavily from the following sources:
 
@@ -17,7 +21,20 @@ The following changes have been made from Michaux:
 * Implemented characters using C-style character literals
 * Included support for all C-style escape sequences except for octal and hex
 * Echoed the way the singleton boolean was handled for singleton empty
+* Handled 'quote', 'define', 'set', 'ok', and 'if' symbols as singletons too
 * Implemented hash table-based symbol table [O(1)] as opposed to reusing pairs approach [O(n)]
+
+### Getting things running
+
+The following instructions have been tested on OS X v10.10.5.  I'm sure they assume that certain
+dev tools are already installed, but I haven't yet tested from a clean OS to confirm the full
+set of requirements.  Basically, if you have enough to complie C code with clang (Apple's gcc-style compliler),
+can run 'make', and have git installed you're on your way.
+
+Clone:
+
+    $ git clone https://github.com/ptdecker/ptscheme.git
+    $ cd ptscheme
 
 Build:
 

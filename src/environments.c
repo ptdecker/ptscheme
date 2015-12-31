@@ -6,6 +6,7 @@
 #include "ptscheme.h"
 #include "lisppair.h"
 #include "lisperr.h"
+#include "environments.h"
 
 object *enclosing_environment(object *env) {
     return cdr(env);
