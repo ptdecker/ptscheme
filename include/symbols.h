@@ -4,7 +4,7 @@
 #define FILE_SYMBOLS_SEEN
 
 extern object *make_symbol(char *value);
-extern char is_symbol(object *obj);
+extern bool is_symbol(object *obj);
 
 /* Built-in symbols */
 

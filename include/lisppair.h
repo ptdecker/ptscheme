@@ -22,9 +22,9 @@ extern void set_cdr(object *obj, object* value);
 /* Syntactic Sugar for the car and cdr nested variants */
 // Uncomment ones as needed
 
-//#define caar(obj)   car(car(obj))
+#define caar(obj)   car(car(obj))
 #define cadr(obj)   car(cdr(obj))
-//#define cdar(obj)   cdr(car(obj))
+#define cdar(obj)   cdr(car(obj))
 //#define cddr(obj)   cdr(cdr(obj))
 //#define caaar(obj)  car(car(car(obj)))
 //#define caadr(obj)  car(car(cdr(obj)))

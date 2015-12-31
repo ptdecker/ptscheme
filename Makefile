@@ -11,7 +11,8 @@ CC = clang
 CPPFLAGS = -std=c99 -Wall -g -I include
 objects = ptscheme.o memmanager.o lispbool.o lispchar.o lispint.o \
           lispstr.o lisperr.o lisppair.o hashtable.o symbols.o \
-          replread.o repleval.o replprint.o environments.o
+          replread.o repleval.o replprint.o environments.o \
+          primitives.o
 testedlibs = hashtable.o
 tests = hashtabletest.o
 
@@ -50,6 +51,8 @@ repleval.o:
 replprint.o:
 
 environments.o:
+
+primitives.o:
 
 hashtabletest.o:
 	clang $(CPPFLAGS) -c -o hashtabletest.o tests/hashtabletest.c

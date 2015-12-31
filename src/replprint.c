@@ -102,6 +102,9 @@ void write(object *obj) {
             write_pair(obj);
             printf(")");
             break;
+        case PRIMITIVE_PROC:
+            printf("#<procedure>");
+            break;
         case STRING:
             str = obj->data.string.value;
             putchar('"');

@@ -17,6 +17,7 @@ typedef enum {
     EMPTY_LIST,
     FIXNUM,
     PAIR,
+    PRIMITIVE_PROC,
     STRING,
     SYMBOL,
     ERROR
@@ -41,6 +42,9 @@ typedef struct object {
             struct object *car;
             struct object *cdr;
         } pair;
+        struct {
+            struct object *(*fn)(struct object *arguments);
+        } primitive_proc;
         struct {
             char *value;
         } string;

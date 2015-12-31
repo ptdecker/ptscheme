@@ -15,12 +15,14 @@
  *           c.f. http://peter.michaux.ca/articles/scheme-from-scratch-introduction
  *           c.f. https://github.com/petermichaux/bootstrap-scheme
  *          - Changes from the Michaux version:
- *              - Inclusion of an error type so that malformed input doesn't kill the app
+ *              - Broke apart into logical (hopefully) modules instead of one big source file
+ *              - Inclusion of an error type so that malformed input doesn't kill the REPL
  *              - Handled the singleton boolean object type differently to parallel other objects
  *              - Implemented characters using C-style character literals
  *              - Included support for all C-style escape sequences except for octal and hex
  *              - Echoed the way the singleton boolean was handled for singleton empty
  *              - Handled 'quote', 'define', 'set', 'ok', and 'if' symbols as singletons too
+ *              - Avoided goto-based tail recurrsion call approach
  */
 
 /* Define directives */
@@ -33,6 +35,7 @@
 #include "repleval.h"
 #include "replprint.h"
 #include "environments.h"
+#include "primitives.h"
 
 object *the_empty_environment;
 object *the_global_environment;
@@ -41,6 +44,7 @@ object *the_global_environment;
 
 int main(void) {
     init_environments();
+    register_primitives();
     printf("ptscheme v0.0.1\n");
     printf("Ctrl-c to exit\n\n");
     while(true) {

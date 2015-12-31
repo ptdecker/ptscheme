@@ -26,7 +26,7 @@ bool is_delimiter(int c) {
             c == ';');
 }
 
-char is_initial(int c) {
+bool is_initial(int c) {
     return (isalpha(c) ||
             c == '*'   ||
             c == '/'   ||
