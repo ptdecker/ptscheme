@@ -16,6 +16,7 @@
 #include "symbols.h"
 #include "repleval.h"
 #include "environments.h"
+#include "primitives.h"
 
 #include "replprint.h"
 

@@ -5,7 +5,6 @@
 
 /* REPL - Read */
 
-
 extern bool is_delimiter(int c);
 extern bool is_initial(int c);
 extern int peek(FILE *in);
