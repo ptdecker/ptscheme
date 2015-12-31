@@ -12,8 +12,6 @@
 #include "lispchar.h"
 #include "lispstr.h"
 #include "lisperr.h"
-//#include "hashtable.h"
-//#include "repleval.h"
 #include "symbols.h"
 #include "environments.h"
 
@@ -25,51 +23,71 @@ object *make_primitive_proc(object *(*fn)(struct object *arguments)) {
     return obj;
 }
 
-// Register primitives
-
 bool is_primitive_proc(object *obj) {
     return obj->type == PRIMITIVE_PROC;
 }
+
+// LISP Primitive Procedure: 'null?'
 
 object *is_null_proc(object *arguments) {
     return is_empty(car(arguments)) ? make_boolean(true) : make_boolean(false);
 }
 
+// LISP Primitive Procedure: 'boolean?'
+
 object *is_boolean_proc(object *arguments) {
     return is_boolean(car(arguments)) ? make_boolean(true) : make_boolean(false);
 }
+
+// LISP Primitive Procedure: 'symbol?'
 
 object *is_symbol_proc(object *arguments) {
     return is_symbol(car(arguments)) ? make_boolean(true) : make_boolean(false);
 }
 
+// LISP Primitive Procedure: 'integer?'
+
 object *is_integer_proc(object *arguments) {
     return is_fixnum(car(arguments)) ? make_boolean(true) : make_boolean(false);
 }
+
+// LISP Primitive Procedure: 'char?'
 
 object *is_char_proc(object *arguments) {
     return is_character(car(arguments)) ? make_boolean(true) : make_boolean(false);
 }
 
+// LISP Primitive Procedure: 'string?'
+
 object *is_string_proc(object *arguments) {
     return is_string(car(arguments)) ? make_boolean(true) : make_boolean(false);
 }
+
+// LISP Primitive Procedure: 'pair?'
 
 object *is_pair_proc(object *arguments) {
     return is_pair(car(arguments)) ? make_boolean(true) : make_boolean(false);
 }
 
+// LISP Primitive Procedure: 'procedure?'
+
 object *is_procedure_proc(object *arguments) {
     return is_primitive_proc(car(arguments)) ? make_boolean(true) : make_boolean(false);
 }
+
+// LISP Primitive Procedure: 'char->integer'
 
 object *char_to_integer_proc(object *arguments) {
     return make_fixnum((car(arguments))->data.character.value);
 }
 
+// LISP Primitive Procedure: 'integer->char'
+
 object *integer_to_char_proc(object *arguments) {
     return make_character((car(arguments))->data.fixnum.value);
 }
+
+// LISP Primitive Procedure: 'number->string'
 
 object *number_to_string_proc(object *arguments) {
     char buffer[100];
@@ -78,19 +96,25 @@ object *number_to_string_proc(object *arguments) {
     return make_string(buffer);
 }
 
+// LISP Primitive Procedure: 'string->number'
+
 object *string_to_number_proc(object *arguments) {
     return make_fixnum(atoi((car(arguments))->data.string.value));
 }
+
+// LISP Primitive Procedure: 'symbol->string'
 
 object *symbol_to_string_proc(object *arguments) {
     return make_string((car(arguments))->data.symbol.value);
 }
 
+// LISP Primitive Procedure: 'string->symbol'
+
 object *string_to_symbol_proc(object *arguments) {
     return make_symbol((car(arguments))->data.string.value);
 }
 
-// LISP Primitive Procedure: 'add'
+// LISP Primitive Procedure: '+'
 
 object *add_proc(object *arguments) {
     long result = 0;
@@ -102,6 +126,8 @@ object *add_proc(object *arguments) {
     return make_fixnum(result);
 }
 
+// LISP Primitive Procedure: '-'
+
 object *sub_proc(object *arguments) {
     long result;
 
@@ -111,6 +137,8 @@ object *sub_proc(object *arguments) {
     }
     return make_fixnum(result);
 }
+
+// LISP Primitive Procedure: '*'
 
 object *mul_proc(object *arguments) {
     long result = 1;
@@ -122,6 +150,8 @@ object *mul_proc(object *arguments) {
     return make_fixnum(result);
 }
 
+// LISP Primitive Procedure: 'quotient'
+
 object *quotient_proc(object *arguments) {
     return make_fixnum(
             ((car(arguments) )->data.fixnum.value) /
@@ -129,12 +159,16 @@ object *quotient_proc(object *arguments) {
         );
 }
 
+// LISP Primitive Procedure: 'remainder'
+
 object *remainder_proc(object *arguments) {
     return make_fixnum(
             ((car(arguments) )->data.fixnum.value) %
             ((cadr(arguments))->data.fixnum.value)
         );
 }
+
+// LISP Primitive Procedure: '=' (numeric only)
 
 object *is_number_equal_proc(object *arguments) {
     long value;
@@ -146,6 +180,8 @@ object *is_number_equal_proc(object *arguments) {
 
     return make_boolean(true);
 }
+
+// LISP Primitive Procedure: '<'
 
 object *is_less_than_proc(object *arguments) {
     long previous;
@@ -163,6 +199,8 @@ object *is_less_than_proc(object *arguments) {
     return make_boolean(true);
 }
 
+// LISP Primitive Procedure: '>'
+
 object *is_greater_than_proc(object *arguments) {
     long previous;
     long next;
@@ -179,31 +217,45 @@ object *is_greater_than_proc(object *arguments) {
     return make_boolean(true);
 }
 
+// LISP Primitive Procedure: 'cons'
+
 object *cons_proc(object *arguments) {
     return cons(car(arguments), cadr(arguments));
 }
+
+// LISP Primitive Procedure: 'car'
 
 object *car_proc(object *arguments) {
     return caar(arguments);
 }
 
+// LISP Primitive Procedure: 'cdr'
+
 object *cdr_proc(object *arguments) {
     return cdar(arguments);
 }
+
+// LISP Primitive Procedure: 'set-car!'
 
 object *set_car_proc(object *arguments) {
     set_car(car(arguments), cadr(arguments));
     return ok_symbol();
 }
 
+// LISP Primitive Procedure: 'set-cdr!'
+
 object *set_cdr_proc(object *arguments) {
     set_cdr(car(arguments), cadr(arguments));
     return ok_symbol();
 }
 
+// LISP Primitive Procedure: 'list'
+
 object *list_proc(object *arguments) {
     return arguments;
 }
+
+// LISP Primitive Procedure: 'eq?'
 
 object *is_eq_proc(object *arguments) {
     object *obj1;
@@ -215,25 +267,28 @@ object *is_eq_proc(object *arguments) {
     if (obj1->type != obj2->type)
         return make_boolean(false);
 
-
-    //TODO: Still smells
+    //TODO: Should eq? recurse so that, for example, (eq? (cons 3 4) (cons 3 4)) returns true?  Use eval? eval + write?
     switch (obj1->type) {
         case FIXNUM:
-            return make_boolean((obj1->data.fixnum.value == obj2->data.fixnum.value) ? true : false);
+            return make_boolean(obj1->data.fixnum.value == obj2->data.fixnum.value);
             break;
         case CHARACTER:
-            return make_boolean((obj1->data.character.value == obj2->data.character.value) ? true : false);
+            return make_boolean(obj1->data.character.value == obj2->data.character.value);
             break;
         case STRING:
-            return make_boolean((strcmp(obj1->data.string.value, obj2->data.string.value) == 0) ? true : false);
+            return make_boolean(strcmp(obj1->data.string.value, obj2->data.string.value) == 0);
             break;
         default:
-            return make_boolean((obj1 == obj2) ? true : false);
+            return make_boolean(obj1 == obj2);
     }
 }
 
+// Macro definition for registering a primitive procedure
+
 #define add_procedure(scheme_name, c_name)       \
     define_variable(make_symbol(scheme_name), make_primitive_proc(c_name), the_global_environment);
+
+// Register all the primitive procedures
 
 void register_primitives() {
 
