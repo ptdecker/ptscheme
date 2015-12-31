@@ -58,8 +58,4 @@ typedef struct object {
     } data;
 } object;
 
-/* primitives.h */
-
-extern object *add_proc(object *arguments);
-
 #endif  // !FILE_PTSCHEME_SEEN

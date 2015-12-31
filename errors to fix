@@ -1,0 +1,10 @@
+errors to fix
+
+symbol?
+string->symbol
+symbol->string
+= string
+set!
+evaluating a symbol
+
+look at eq?
