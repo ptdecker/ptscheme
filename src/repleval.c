@@ -23,7 +23,7 @@
 
 // Self Evaluating Symbols
 
-char is_self_evaluating(object *exp) {
+bool is_self_evaluating(object *exp) {
     return is_boolean(exp)   ||
            is_fixnum(exp)    ||
            is_character(exp) ||
@@ -33,13 +33,19 @@ char is_self_evaluating(object *exp) {
 
 // LISP Primitive: Variables
 
-char is_variable(object *expression) {
+bool is_variable(object *expression) {
     return is_symbol(expression);
+}
+
+bool is_bound(object *expression, object *env) {
+    if (is_variable(expression))
+        return !is_error(lookup_variable_value(expression, env));
+    return false;
 }
 
 // A tagged list is a pair whose car is a specified symbol. The value of
 // the tagged list is sthe cdr of the pair
-char is_tagged_list(object *expression, object *tag) {
+bool is_tagged_list(object *expression, object *tag) {
     object *the_car;
     if (is_pair(expression)) {
         the_car = car(expression);
@@ -51,7 +57,7 @@ char is_tagged_list(object *expression, object *tag) {
 // LISP Primitive: 'quote'
 // Note: The single quote symbol ("\'") syntactic sugar is handled in by read()
 
-char is_quoted(object *expression) {
+bool is_quoted(object *expression) {
     return is_tagged_list(expression, quote_symbol());
 }
 
@@ -61,23 +67,21 @@ object *text_of_quotation(object *exp) {
 
 // LISP Primitive: assignment (or 'set!')
 
-char is_assignment(object *exp) {
+bool is_assignment(object *exp) {
     return is_tagged_list(exp, set_symbol());
 }
 
 object *assignment_variable(object *exp) {
-//    return car(cdr(exp));
     return cadr(exp);
 }
 
 object *assignment_value(object *exp) {
-//    return car(cdr(cdr(exp)));
     return caddr(exp);
 }
 
 // LISP Primitive: 'define'
 
-char is_definition(object *exp) {
+bool is_definition(object *exp) {
     return is_tagged_list(exp, define_symbol());
 }
 
@@ -111,11 +115,46 @@ object *if_alternative(object *exp) {
     return cadddr(exp);
 }
 
+// Handle Registered Built-in Primitive Procedures
+
+bool is_application(object *exp) {
+    return is_pair(exp);
+}
+
+object *operator(object *exp) {
+    return car(exp);
+}
+
+object *operands(object *exp) {
+    return cdr(exp);
+}
+
+bool is_no_operands(object *ops) {
+    return is_empty(ops);
+}
+
+object *first_operand(object *ops) {
+    return car(ops);
+}
+
+object *rest_operands(object *ops) {
+    return cdr(ops);
+}
+
+object *list_of_values(object *exps, object *env) {
+    if (is_no_operands(exps))
+        return empty_list();
+    return cons(eval(first_operand(exps), env), list_of_values(rest_operands(exps), env));
+}
+
 // START RECURSIVE EVAL
 
 object *eval_assignment(object *exp, object *env) {
-    set_variable_value(assignment_variable(exp), eval(assignment_value(exp), env), env);
-    return ok_symbol();
+    if (is_bound(exp, env)) {
+        set_variable_value(assignment_variable(exp), eval(assignment_value(exp), env), env);
+        return ok_symbol();
+    }
+    return make_error(50, "unbound variable");
 }
 
 object *eval_definition(object *exp, object *env) {
@@ -124,6 +163,9 @@ object *eval_definition(object *exp, object *env) {
 }
 
 object *eval(object *exp, object *env) {
+
+    object *procedure;
+    object *arguments;
 
 tailcall:
     if (is_self_evaluating(exp))
@@ -144,6 +186,22 @@ tailcall:
     if (is_if(exp)) {
         exp = is_true(eval(if_predicate(exp), env)) ? if_consequent(exp) : if_alternative(exp);
         goto tailcall;
+    }
+
+    if (is_application(exp)) {
+        if (is_bound(operator(exp), env)) {
+            procedure = eval(operator(exp), env);
+            arguments = list_of_values(operands(exp), env);
+            return (procedure->data.primitive_proc.fn)(arguments);
+        }
+
+        //TODO:  This was added so that pairs still properly evaluate and do not return an error;
+        //       however; this may not be valid in the final implementation since "symbols are not
+        //       self evaluating".  Revisit.
+        if (is_pair(exp))
+            return exp;
+
+        return make_error(99, "unbound operator");
     }
 
     fprintf(stderr, "cannot eval unknown expression type\n");

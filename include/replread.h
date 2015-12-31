@@ -7,7 +7,7 @@
 
 
 extern bool is_delimiter(int c);
-extern char is_initial(int c);
+extern bool is_initial(int c);
 extern int peek(FILE *in);
 extern void eat_whitespace(FILE *in);
 extern void flush_input(FILE *in);

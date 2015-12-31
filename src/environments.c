@@ -57,7 +57,6 @@ object *lookup_variable_value(object *var, object *env) {
     return make_error(50, "unbound variable");
 }
 
-//TODO: set_variable_value needs to soft receover
 void set_variable_value(object *var, object *val, object *env) {
     object *frame;
     object *vars;

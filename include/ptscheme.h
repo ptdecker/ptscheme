@@ -17,6 +17,7 @@ typedef enum {
     EMPTY_LIST,
     FIXNUM,
     PAIR,
+    PRIMITIVE_PROC,
     STRING,
     SYMBOL,
     ERROR
@@ -42,6 +43,9 @@ typedef struct object {
             struct object *cdr;
         } pair;
         struct {
+            struct object *(*fn)(struct object *arguments);
+        } primitive_proc;
+        struct {
             char *value;
         } string;
         struct {
@@ -53,5 +57,9 @@ typedef struct object {
         } error;
     } data;
 } object;
+
+/* primitives.h */
+
+extern object *add_proc(object *arguments);
 
 #endif  // !FILE_PTSCHEME_SEEN

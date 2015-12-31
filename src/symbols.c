@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <strings.h>
+#include <stdbool.h>
 #include "ptscheme.h"
 #include "memmanager.h"
 #include "hashtable.h"
@@ -32,7 +33,7 @@ object *make_symbol(char *value) {
     return obj;
 }
 
-char is_symbol(object *obj) {
+bool is_symbol(object *obj) {
     return obj->type == SYMBOL;
 }
 
