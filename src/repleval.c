@@ -21,6 +21,8 @@
 
 /* REPL - Evaluate */
 
+// Self Evaluating Symbols
+
 char is_self_evaluating(object *exp) {
     return is_boolean(exp)   ||
            is_fixnum(exp)    ||
@@ -29,19 +31,25 @@ char is_self_evaluating(object *exp) {
            is_string(exp);
 }
 
+// LISP Primitive: Variables
+
 char is_variable(object *expression) {
     return is_symbol(expression);
 }
 
+// A tagged list is a pair whose car is a specified symbol. The value of
+// the tagged list is sthe cdr of the pair
 char is_tagged_list(object *expression, object *tag) {
     object *the_car;
-
     if (is_pair(expression)) {
         the_car = car(expression);
         return is_symbol(the_car) && (the_car == tag);
     }
     return false;
 }
+
+// LISP Primitive: 'quote'
+// Note: The single quote symbol ("\'") syntactic sugar is handled in by read()
 
 char is_quoted(object *expression) {
     return is_tagged_list(expression, quote_symbol());
@@ -50,6 +58,8 @@ char is_quoted(object *expression) {
 object *text_of_quotation(object *exp) {
     return cadr(exp);
 }
+
+// LISP Primitive: assignment (or 'set!')
 
 char is_assignment(object *exp) {
     return is_tagged_list(exp, set_symbol());
@@ -65,6 +75,8 @@ object *assignment_value(object *exp) {
     return caddr(exp);
 }
 
+// LISP Primitive: 'define'
+
 char is_definition(object *exp) {
     return is_tagged_list(exp, define_symbol());
 }
@@ -76,6 +88,8 @@ object *definition_variable(object *exp) {
 object *definition_value(object *exp) {
     return caddr(exp);
 }
+
+// LISP Primitive 'if'
 
 bool is_if(object *exp) {
     return is_tagged_list(exp, if_symbol());
@@ -96,6 +110,8 @@ object *if_alternative(object *exp) {
 
     return cadddr(exp);
 }
+
+// START RECURSIVE EVAL
 
 object *eval_assignment(object *exp, object *env) {
     set_variable_value(assignment_variable(exp), eval(assignment_value(exp), env), env);

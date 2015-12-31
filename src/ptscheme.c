@@ -4,9 +4,8 @@
  * LICENSE INFO
  * ------------
  *
- * The licensed libraries used by this project are:
- *    - Brian Fox's GNU Readline under GPL v3 (now maintained by Chet Ramey)
- *           c.f. http://cnswww.cns.cwru.edu/php/chet/readline/rltop.html
+ * This software is licensed under GNU v3 and is based highly upon the works of the authors below.
+ * The Michaux scheme is licensesd under GNU v3 too, so this also carries that forward.
  *
  * This applicaiton is based partially upon the shoulders of:
  *    - Daniel Holden's MPC under BSD3
@@ -21,9 +20,7 @@
  *              - Implemented characters using C-style character literals
  *              - Included support for all C-style escape sequences except for octal and hex
  *              - Echoed the way the singleton boolean was handled for singleton empty
- *              - Continued the patern for define and set
- *
- * Due to the inclusion of GNU Readline, this project is also licensed under GPL v3
+ *              - Handled 'quote', 'define', 'set', 'ok', and 'if' symbols as singletons too
  */
 
 /* Define directives */

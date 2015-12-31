@@ -11,7 +11,7 @@
 
 object *empty_list() {
 
-    // The empty list is a singletons
+    // The empty list is a singleton
 
     static object *_empty_list = NULL;
 
