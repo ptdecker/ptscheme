@@ -5,9 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-//#include <ctype.h>
 #include "ptscheme.h"
-//#include "memmanager.h"
 #include "lispbool.h"
 #include "lispchar.h"
 #include "lispint.h"
@@ -17,6 +15,7 @@
 #include "hashtable.h"
 #include "symbols.h"
 #include "repleval.h"
+#include "environments.h"
 
 /* REPL - Evaluate */
 

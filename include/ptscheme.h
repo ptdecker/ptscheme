@@ -54,8 +54,4 @@ typedef struct object {
     } data;
 } object;
 
-extern void set_variable_value(object *var, object *val, object *env);
-extern void define_variable(object *var, object *val, object *env);
-extern object *lookup_variable_value(object *var, object *env);
-
 #endif  // !FILE_PTSCHEME_SEEN
