@@ -167,43 +167,48 @@ object *eval(object *exp, object *env) {
 
     object *procedure;
     object *arguments;
+    bool tailcall = false;
 
-tailcall:
-    if (is_self_evaluating(exp))
-        return exp;
+    do {
 
-    if (is_variable(exp))
-        return lookup_variable_value(exp, env);
-
-    if (is_quoted(exp))
-        return text_of_quotation(exp);
-
-    if (is_assignment(exp))
-        return eval_assignment(exp, env);
-
-    if (is_definition(exp))
-        return eval_definition(exp, env);
-
-    if (is_if(exp)) {
-        exp = is_true(eval(if_predicate(exp), env)) ? if_consequent(exp) : if_alternative(exp);
-        goto tailcall;
-    }
-
-    if (is_application(exp)) {
-        if (is_bound(operator(exp), env)) {
-            procedure = eval(operator(exp), env);
-            arguments = list_of_values(operands(exp), env);
-            return (procedure->data.primitive_proc.fn)(arguments);
-        }
-
-        //TODO:  This was added so that pairs still properly evaluate and do not return an error;
-        //       however; this may not be valid in the final implementation since "symbols are not
-        //       self evaluating".  Revisit.
-        if (is_pair(exp))
+        if (is_self_evaluating(exp))
             return exp;
 
-        return make_error(99, "unbound operator");
-    }
+        if (is_variable(exp))
+            return lookup_variable_value(exp, env);
+
+        if (is_quoted(exp))
+            return text_of_quotation(exp);
+
+        if (is_assignment(exp))
+            return eval_assignment(exp, env);
+
+        if (is_definition(exp))
+            return eval_definition(exp, env);
+
+        if (is_if(exp)) {
+            exp = is_true(eval(if_predicate(exp), env)) ? if_consequent(exp) : if_alternative(exp);
+            tailcall = true;
+            continue;
+        }
+
+        if (is_application(exp)) {
+            if (is_bound(operator(exp), env)) {
+                procedure = eval(operator(exp), env);
+                arguments = list_of_values(operands(exp), env);
+              return (procedure->data.primitive_proc.fn)(arguments);
+            }
+
+            //TODO:  This was added so that pairs still properly evaluate and do not return an error;
+            //       however; this may not be valid in the final implementation since "symbols are not
+            //       self evaluating".  Revisit.
+            if (is_pair(exp))
+                return exp;
+
+            return make_error(99, "unbound operator");
+        }
+
+    } while (tailcall);
 
     fprintf(stderr, "cannot eval unknown expression type\n");
     exit(EXIT_FAILURE);
