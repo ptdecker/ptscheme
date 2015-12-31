@@ -1,6 +1,8 @@
 ptscheme
 ========
 
+[![Build Status](https://travis-ci.org/travis-ci/travis-web.svg?branch=master)](https://travis-ci.org/travis-ci/travis-web)
+
 ### Overview
 
 My take on a Scheme dialect LISP implementation realized in 'C' with enough functionality to
