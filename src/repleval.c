@@ -17,11 +17,9 @@
 #include "repleval.h"
 #include "environments.h"
 
-/* REPL - Evaluate */
+#include "replprint.h"
 
-//object *eval(object *exp) {
-//    return exp;
-//}
+/* REPL - Evaluate */
 
 char is_self_evaluating(object *exp) {
     return is_boolean(exp)   ||
@@ -79,6 +77,26 @@ object *definition_value(object *exp) {
     return caddr(exp);
 }
 
+bool is_if(object *exp) {
+    return is_tagged_list(exp, if_symbol());
+}
+
+object *if_predicate(object *exp) {
+    return cadr(exp);
+}
+
+object *if_consequent(object *exp) {
+    return caddr(exp);
+}
+
+object *if_alternative(object *exp) {
+
+    if (is_empty(cdddr(exp)))
+        return make_boolean(false);
+
+    return cadddr(exp);
+}
+
 object *eval_assignment(object *exp, object *env) {
     set_variable_value(assignment_variable(exp), eval(assignment_value(exp), env), env);
     return ok_symbol();
@@ -91,6 +109,7 @@ object *eval_definition(object *exp, object *env) {
 
 object *eval(object *exp, object *env) {
 
+tailcall:
     if (is_self_evaluating(exp))
         return exp;
 
@@ -105,6 +124,11 @@ object *eval(object *exp, object *env) {
 
     if (is_definition(exp))
         return eval_definition(exp, env);
+
+    if (is_if(exp)) {
+        exp = is_true(eval(if_predicate(exp), env)) ? if_consequent(exp) : if_alternative(exp);
+        goto tailcall;
+    }
 
     fprintf(stderr, "cannot eval unknown expression type\n");
     exit(EXIT_FAILURE);

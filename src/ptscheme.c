@@ -37,6 +37,9 @@
 #include "replprint.h"
 #include "environments.h"
 
+object *the_empty_environment;
+object *the_global_environment;
+
 /* REPL */
 
 int main(void) {

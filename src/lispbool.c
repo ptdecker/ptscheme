@@ -38,5 +38,9 @@ bool is_false(object *obj) {
 }
 
 bool is_true(object *obj) {
-    return (obj->data.boolean.value == true);
+// Note: true is implemented as !false to support Scheme's convention that all values are
+//       true expect for a Boolean false (i.e. #f)
+    if (obj->type == BOOLEAN)
+        return (!is_false(obj));
+    return true;
 }
