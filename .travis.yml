@@ -2,3 +2,7 @@ os: osx
 language: c
 compiler: clang
 script: make && make test
+notifications:
+  slack:
+    rooms:
+      - pathar:1nsIU4O8gSXefwoUFKQuBWVN#random
