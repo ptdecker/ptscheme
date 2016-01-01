@@ -1,4 +1,4 @@
-/* replread.c */
+/* replprint.c */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,8 +9,6 @@
 #include "lisppair.h"
 #include "hashtable.h"
 #include "replprint.h"
-
-/* REPL - Print */
 
 void expand_esc_seq(char str[], const char c) {
 

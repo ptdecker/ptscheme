@@ -1,5 +1,4 @@
-/* replread.c */
-/* REPL - Read */
+/* repleval.c */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,10 +16,6 @@
 #include "repleval.h"
 #include "environments.h"
 #include "primitives.h"
-
-#include "replprint.h"
-
-/* REPL - Evaluate */
 
 // Self Evaluating Symbols
 
@@ -45,7 +40,7 @@ bool is_bound(object *expression, object *env) {
 }
 
 // A tagged list is a pair whose car is a specified symbol. The value of
-// the tagged list is sthe cdr of the pair
+// the tagged list is the cdr of the pair
 bool is_tagged_list(object *expression, object *tag) {
     object *the_car;
     if (is_pair(expression)) {
@@ -169,11 +164,7 @@ object *list_of_values(object *exps, object *env) {
 // START RECURSIVE EVAL
 
 object *eval_assignment(object *exp, object *env) {
-//    if (is_bound(exp, env)) {
         set_variable_value(assignment_variable(exp), eval(assignment_value(exp), env), env);
-//        return ok_symbol();
-//    }
-//    return make_error(50, "unbound variable");
         return ok_symbol();
 }
 
@@ -215,15 +206,10 @@ object *eval(object *exp, object *env) {
             return make_compound_proc(lambda_parameters(exp), lambda_body(exp), env);
 
         if (is_application(exp)) {
-
-//            if (is_bound(operator(exp), env)) {
-
             procedure = eval(operator(exp), env);
             arguments = list_of_values(operands(exp), env);
-
             if (is_primitive_proc(procedure))
                 return (procedure->data.primitive_proc.fn)(arguments);
-
             if (is_compound_proc(procedure)) {
                 env = extend_environment(procedure->data.compound_proc.parameters, arguments, procedure->data.compound_proc.env);
                 exp = procedure->data.compound_proc.body;
@@ -235,18 +221,7 @@ object *eval(object *exp, object *env) {
                 tailcall = true;
                 continue;
             }
-
             return make_error(342, "unknown procedure type");
-
-//            }
-
-            //TODO:  This was added so that pairs still properly evaluate and do not return an error;
-            //       however; this may not be valid in the final implementation since "symbols are not
-            //       self evaluating".  Revisit.
-//            if (is_pair(exp))
-//                return exp;
-
-//            return make_error(99, "unbound operator");
         } // is_application()
 
     } while (tailcall);
