@@ -24,7 +24,7 @@ The following changes have been made from Michaux:
 * Implemented characters using C-style character literals
 * Included support for all C-style escape sequences except for octal and hex
 * Echoed the way the singleton boolean was handled for singleton empty
-* Handled 'quote', 'define', 'set', 'ok', and 'if' symbols as singletons too
+* Handled 'quote', 'define', 'set', 'ok', 'if', and lambda symbols as singletons too
 * Implemented hash table-based symbol table [O(1)] as opposed to reusing pairs approach [O(n)]
 * Avoided goto-based tail recurrsion call approach
 

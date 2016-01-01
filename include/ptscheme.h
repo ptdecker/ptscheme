@@ -14,6 +14,7 @@
 typedef enum {
     BOOLEAN,
     CHARACTER,
+    COMPOUND_PROC,
     EMPTY_LIST,
     FIXNUM,
     PAIR,
@@ -32,6 +33,11 @@ typedef struct object {
         struct {
             char value;
         } character;
+        struct {
+            struct object *parameters;
+            struct object *body;
+            struct object *env;
+        } compound_proc;
         struct {
             // Empty
         } empty;
@@ -57,5 +63,16 @@ typedef struct object {
         } error;
     } data;
 } object;
+
+/* Lambda suport (lambda.h) */
+
+#include <stdbool.h>
+
+extern object *make_compound_proc(object *parameters, object *body, object* env);
+extern bool is_compound_proc(object *obj);
+extern object *make_lambda(object *parameters, object *body);
+extern bool is_lambda(object *exp);
+extern object *lambda_parameters(object *exp);
+extern object *lambda_body(object *exp);
 
 #endif  // !FILE_PTSCHEME_SEEN

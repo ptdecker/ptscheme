@@ -21,7 +21,7 @@
  *              - Implemented characters using C-style character literals
  *              - Included support for all C-style escape sequences except for octal and hex
  *              - Echoed the way the singleton boolean was handled for singleton empty
- *              - Handled 'quote', 'define', 'set', 'ok', and 'if' symbols as singletons too
+ *              - Handled 'quote', 'define', 'set', 'ok', 'if', 'lambda' symbols as singletons too
  *              - Avoided goto-based tail recurrsion call approach
  */
 
@@ -39,6 +39,42 @@
 
 object *the_empty_environment;
 object *the_global_environment;
+
+/* Lambda support (lambda.c) */
+
+#include "memmanager.h"
+#include "lisppair.h"
+#include "symbols.h"
+
+object *make_compound_proc(object *parameters, object *body, object* env) {
+    object *obj;
+    obj = alloc_object();
+    obj->type = COMPOUND_PROC;
+    obj->data.compound_proc.parameters = parameters;
+    obj->data.compound_proc.body = body;
+    obj->data.compound_proc.env = env;
+    return obj;
+}
+
+bool is_compound_proc(object *obj) {
+   return obj->type == COMPOUND_PROC;
+}
+
+object *make_lambda(object *parameters, object *body) {
+    return cons(lambda_symbol(), cons(parameters, body));
+}
+
+bool is_lambda(object *exp) {
+    return is_tagged_list(exp, lambda_symbol());
+}
+
+object *lambda_parameters(object *exp) {
+    return cadr(exp);
+}
+
+object *lambda_body(object *exp) {
+    return cddr(exp);
+}
 
 /* REPL */
 

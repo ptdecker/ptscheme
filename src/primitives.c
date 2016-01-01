@@ -30,49 +30,51 @@ bool is_primitive_proc(object *obj) {
 // LISP Primitive Procedure: 'null?'
 
 object *is_null_proc(object *arguments) {
-    return is_empty(car(arguments)) ? make_boolean(true) : make_boolean(false);
+    return make_boolean(is_empty(car(arguments)));
 }
 
 // LISP Primitive Procedure: 'boolean?'
 
 object *is_boolean_proc(object *arguments) {
-    return is_boolean(car(arguments)) ? make_boolean(true) : make_boolean(false);
+    return make_boolean(is_boolean(car(arguments)));
 }
 
 // LISP Primitive Procedure: 'symbol?'
 
 object *is_symbol_proc(object *arguments) {
-    return is_symbol(car(arguments)) ? make_boolean(true) : make_boolean(false);
+    return make_boolean(is_symbol(car(arguments)));
 }
 
 // LISP Primitive Procedure: 'integer?'
 
 object *is_integer_proc(object *arguments) {
-    return is_fixnum(car(arguments)) ? make_boolean(true) : make_boolean(false);
+    return make_boolean(is_fixnum(car(arguments)));
 }
 
 // LISP Primitive Procedure: 'char?'
 
 object *is_char_proc(object *arguments) {
-    return is_character(car(arguments)) ? make_boolean(true) : make_boolean(false);
+    return make_boolean(is_character(car(arguments)));
 }
 
 // LISP Primitive Procedure: 'string?'
 
 object *is_string_proc(object *arguments) {
-    return is_string(car(arguments)) ? make_boolean(true) : make_boolean(false);
+    return make_boolean(is_string(car(arguments)));
 }
 
 // LISP Primitive Procedure: 'pair?'
 
 object *is_pair_proc(object *arguments) {
-    return is_pair(car(arguments)) ? make_boolean(true) : make_boolean(false);
+    return make_boolean(is_pair(car(arguments)));
 }
 
 // LISP Primitive Procedure: 'procedure?'
 
 object *is_procedure_proc(object *arguments) {
-    return is_primitive_proc(car(arguments)) ? make_boolean(true) : make_boolean(false);
+    object *obj;
+    obj = car(arguments);
+    return make_boolean((is_primitive_proc(obj) || is_compound_proc(obj)));
 }
 
 // LISP Primitive Procedure: 'char->integer'

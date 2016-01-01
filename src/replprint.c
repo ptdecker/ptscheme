@@ -1,4 +1,4 @@
-/* replread.c */
+/* replprint.c */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,8 +9,6 @@
 #include "lisppair.h"
 #include "hashtable.h"
 #include "replprint.h"
-
-/* REPL - Print */
 
 void expand_esc_seq(char str[], const char c) {
 
@@ -102,6 +100,7 @@ void write(object *obj) {
             write_pair(obj);
             printf(")");
             break;
+        case COMPOUND_PROC:
         case PRIMITIVE_PROC:
             printf("#<procedure>");
             break;
