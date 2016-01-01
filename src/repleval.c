@@ -119,6 +119,10 @@ object *if_alternative(object *exp) {
 
 // LISP Primitive 'begin'
 
+object *make_begin(object *exp) {
+    return cons(begin_symbol(), exp);
+}
+
 bool is_begin(object *exp) {
     return is_tagged_list(exp, begin_symbol());
 }
@@ -233,12 +237,7 @@ object *eval(object *exp, object *env) {
                 return (procedure->data.primitive_proc.fn)(arguments);
             if (is_compound_proc(procedure)) {
                 env = extend_environment(procedure->data.compound_proc.parameters, arguments, procedure->data.compound_proc.env);
-                exp = procedure->data.compound_proc.body;
-                while (!is_last_exp(exp)) {
-                    eval(first_exp(exp), env);
-                    exp = rest_exps(exp);
-                }
-                exp = first_exp(exp);
+                exp = make_begin(procedure->data.compound_proc.body);
                 tailcall = true;
                 continue;
             }
