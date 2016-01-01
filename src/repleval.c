@@ -117,6 +117,16 @@ object *if_alternative(object *exp) {
     return cadddr(exp);
 }
 
+// LISP Primitive 'begin'
+
+bool is_begin(object *exp) {
+    return is_tagged_list(exp, begin_symbol());
+}
+
+object *begin_actions(object *exp) {
+    return cdr(exp);
+}
+
 // Handle Registered Built-in Primitive Procedures
 
 bool is_application(object *exp) {
@@ -204,6 +214,17 @@ object *eval(object *exp, object *env) {
 
         if (is_lambda(exp))
             return make_compound_proc(lambda_parameters(exp), lambda_body(exp), env);
+
+        if (is_begin(exp)) {
+            exp = begin_actions(exp);
+            while (!is_last_exp(exp)) {
+                eval(first_exp(exp), env);
+                exp = rest_exps(exp);
+            }
+            exp = first_exp(exp);
+            tailcall = true;
+            continue;
+        }
 
         if (is_application(exp)) {
             procedure = eval(operator(exp), env);

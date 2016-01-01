@@ -78,3 +78,10 @@ object *lambda_symbol() {
         _lambda_symbol = make_symbol("lambda");
     return _lambda_symbol;
 }
+
+object *begin_symbol() {
+    static object *_lambda_symbol = NULL;
+    if (_lambda_symbol == NULL)
+        _lambda_symbol = make_symbol("begin");
+    return _lambda_symbol;
+}
