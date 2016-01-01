@@ -14,5 +14,6 @@ extern object *set_symbol();
 extern object *ok_symbol();
 extern object *if_symbol();
 extern object *lambda_symbol();
+extern object *begin_symbol();
 
 #endif // FILE_SYMBOLS_SEEN
