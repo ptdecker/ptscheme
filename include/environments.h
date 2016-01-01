@@ -7,6 +7,7 @@ extern object *lookup_variable_value(object *var, object *env);
 extern void set_variable_value(object *var, object *val, object *env);
 extern void define_variable(object *var, object *val, object *env);
 extern void init_environments();
+extern object *extend_environment(object *vars, object *vals, object *base_env);
 
 extern object *the_empty_environment;
 extern object *the_global_environment;

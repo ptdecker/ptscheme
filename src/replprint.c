@@ -102,6 +102,7 @@ void write(object *obj) {
             write_pair(obj);
             printf(")");
             break;
+        case COMPOUND_PROC:
         case PRIMITIVE_PROC:
             printf("#<procedure>");
             break;

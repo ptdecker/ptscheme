@@ -38,53 +38,43 @@ bool is_symbol(object *obj) {
 }
 
 object *quote_symbol() {
-
     static object *_quote_symbol = NULL;
-
     if (_quote_symbol == NULL)
         _quote_symbol = make_symbol("quote");
-
     return _quote_symbol;
 }
 
 object *define_symbol() {
-
     static object *_define_symbol = NULL;
-
     if (_define_symbol == NULL)
         _define_symbol = make_symbol("define");
-
     return _define_symbol;
 }
 
 object *set_symbol() {
-
     static object *_set_symbol = NULL;
-
     if (_set_symbol == NULL)
         _set_symbol = make_symbol("set!");
-
     return _set_symbol;
 }
 
 object *ok_symbol() {
-
     static object *_ok_symbol = NULL;
-
     if (_ok_symbol == NULL)
         _ok_symbol = make_symbol("ok");
-
     return _ok_symbol;
 }
 
 object *if_symbol() {
-
     static object *_if_symbol = NULL;
-
     if (_if_symbol == NULL)
         _if_symbol = make_symbol("if");
-
     return _if_symbol;
 }
 
-
+object *lambda_symbol() {
+    static object *_lambda_symbol = NULL;
+    if (_lambda_symbol == NULL)
+        _lambda_symbol = make_symbol("lambda");
+    return _lambda_symbol;
+}
