@@ -311,6 +311,18 @@ object *environment_proc(object *arguments) {
      return make_environment();
 }
 
+// ptscheme Primitive Procedure 'exit'
+
+object *exit_proc(object *arguments) {
+    if (is_empty(arguments))
+        exit(EXIT_SUCCESS);
+    if (is_fixnum(car(arguments)))
+        exit(car(arguments)->data.fixnum.value);
+    if (is_string(car(arguments)))
+        fprintf(stderr, "Terminal Error: \"%s\"\n", car(arguments)->data.string.value);
+    exit(EXIT_FAILURE);
+}
+
 // Macro definition for registering a primitive procedure
 
 #define add_procedure(scheme_name, c_name)       \
@@ -357,7 +369,9 @@ void populate_environment(object *env) {
     add_procedure("apply", apply_proc);
 
     add_procedure("interaction-environment", interaction_environment_proc);
-    add_procedure("null-environment", null_environment_proc);
-    add_procedure("environment"     , environment_proc);
-    add_procedure("eval"            , eval_proc);
+    add_procedure("null-environment"       , null_environment_proc);
+    add_procedure("environment"            , environment_proc);
+    add_procedure("eval"                   , eval_proc);
+
+    add_procedure("exit", exit_proc);
 }

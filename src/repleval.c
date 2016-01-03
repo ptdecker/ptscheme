@@ -418,6 +418,7 @@ object *eval(object *exp, object *env) {
         }
 
         if (is_application(exp)) {
+
             procedure = eval(operator(exp), env);
             arguments = list_of_values(operands(exp), env);
 
