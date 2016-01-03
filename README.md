@@ -1,32 +1,19 @@
-ptscheme
-========
+ptscheme v0.1
+=============
 
 [![Build Status](https://travis-ci.org/ptdecker/ptscheme.svg?branch=master)](https://travis-ci.org/ptdecker/ptscheme)
 
 ### Overview
 
 My take on a Scheme dialect LISP implementation realized in 'C' with enough functionality to
-complete the excercises in the Purple Wizard book, "Structure and Interpretation
-of Computer Programs"
+complete the excercises in the Purple Wizard book, "[Structure and Interpretation
+of Computer Programs](https://mitpress.mit.edu/sicp/)"
 
-### Implementation notes and credits
+### Current Status
 
-This implementation of Scheme draws heavily from the following sources:
-
-* Daniel Holden's MPC under BSD3
-* Peter Michaux's "Scheme from Scratch"
-
-The following changes have been made from Michaux:
-
-* Broke apart into logical (hopefully) modules instead of one big source file
-* Inclusion of an error type so that malformed input doesn't kill the REPL
-* Handled the singleton boolean object type differently to parallel other objects
-* Implemented characters using C-style character literals
-* Included support for all C-style escape sequences except for octal and hex
-* Echoed the way the singleton boolean was handled for singleton empty
-* Handled 'quote', 'define', 'set', 'ok', 'if', and lambda symbols as singletons too
-* Implemented hash table-based symbol table [O(1)] as opposed to reusing pairs approach [O(n)]
-* Avoided goto-based tail recurrsion call approach
+The basic interpreter now functions; however, a standard library has not yet been implemented.
+Also, there are numerous clean-up tasks and enhancements I would like to complete before calling
+it a "1.0" version.
 
 ### Getting things running
 
@@ -53,3 +40,25 @@ Test (not full coverage):
 Run:
 
     $ ./ptscheme
+
+### Implementation notes and credits
+
+Partial compiance with the [R5RS](http://www.schemers.org/Documents/Standards/R5RS/r5rs.pdf) standard is attempted, but I have included variations (such as C-style character literals).
+
+This implementation of Scheme draws heavily from the following sources:
+
+* Daniel Holden's "[Build Your Own LISP](http://buildyourownlisp.com/)"
+* Peter Michaux's "[Scheme from Scratch](http://peter.michaux.ca/articles/scheme-from-scratch-introduction)"
+
+The following changes have been made from Michaux:
+
+* Broke apart into logical (hopefully) modules instead of one big source file
+* Inclusion of an error type so that malformed input doesn't kill the REPL
+* Handled the singleton boolean object type differently to parallel other objects
+* Implemented characters using C-style character literals
+* Included support for all C-style escape sequences except for octal and hex
+* Echoed the way the singleton boolean was handled for singleton empty
+* Handled 'quote', 'define', 'set', 'ok', 'if', and lambda symbols as singletons too
+* Implemented hash table-based symbol table [O(1)] as opposed to reusing pairs approach [O(n)]
+* Avoided goto-based tail recurrsion call approach
+* Included an 'exit' primitive

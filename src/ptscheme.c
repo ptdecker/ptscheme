@@ -23,6 +23,7 @@
  *              - Echoed the way the singleton boolean was handled for singleton empty
  *              - Handled 'quote', 'define', 'set', 'ok', 'if', 'lambda' symbols as singletons too
  *              - Avoided goto-based tail recurrsion call approach
+ *              - Included an 'exit' primitive
  */
 
 /* Define directives */
