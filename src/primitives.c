@@ -285,6 +285,14 @@ object *is_eq_proc(object *arguments) {
     }
 }
 
+// LISP Primitive Procedure: 'apply'
+
+object *apply_proc(object *arguments) {
+    fprintf(stderr, "illegal state: The body of the apply "
+            "primitive procedure should not execute.\n");
+    exit(EXIT_FAILURE);
+}
+
 // Macro definition for registering a primitive procedure
 
 #define add_procedure(scheme_name, c_name)       \
@@ -327,4 +335,6 @@ void register_primitives() {
     add_procedure("list"    , list_proc);
 
     add_procedure("eq?", is_eq_proc);
+
+    add_procedure("apply", apply_proc);
 }

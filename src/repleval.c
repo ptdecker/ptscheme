@@ -292,6 +292,22 @@ object *or_tests(object *exp) {
     return cdr(exp);
 }
 
+// LISP Primitive 'apply' helper functions
+
+object *prepare_apply_operands(object *arguments) {
+    return is_empty(cdr(arguments)) ?
+        car(arguments) :
+        cons(car(arguments), prepare_apply_operands(cdr(arguments)));
+}
+
+object *apply_operator(object *arguments) {
+    return car(arguments);
+}
+
+object *apply_operands(object *arguments) {
+    return prepare_apply_operands(cdr(arguments));
+}
+
 // START RECURSIVE EVAL
 
 object *eval_assignment(object *exp, object *env) {
@@ -394,14 +410,22 @@ object *eval(object *exp, object *env) {
         if (is_application(exp)) {
             procedure = eval(operator(exp), env);
             arguments = list_of_values(operands(exp), env);
+
+            if (is_primitive_proc(procedure) && procedure->data.primitive_proc.fn == apply_proc) {
+                procedure = apply_operator(arguments);
+                arguments = apply_operands(arguments);
+            }
+
             if (is_primitive_proc(procedure))
                 return (procedure->data.primitive_proc.fn)(arguments);
+
             if (is_compound_proc(procedure)) {
                 env = extend_environment(procedure->data.compound_proc.parameters, arguments, procedure->data.compound_proc.env);
                 exp = make_begin(procedure->data.compound_proc.body);
                 tailcall = true;
                 continue;
             }
+
             return make_error(342, "unknown procedure type");
         } // is_application()
 
