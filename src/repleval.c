@@ -28,7 +28,7 @@ bool is_self_evaluating(object *exp) {
            is_string(exp);
 }
 
-// LISP Primitive: Variables
+// LISP Primitive: Variables Helper Functions
 
 bool is_variable(object *expression) {
     return is_symbol(expression);
@@ -49,7 +49,7 @@ bool is_tagged_list(object *expression, object *tag) {
     return is_symbol(the_car) && (the_car == tag);
 }
 
-// LISP Primitive: 'quote'
+// LISP Primitive: 'quote' Helper Functions
 // Note: The single quote symbol ("\'") syntactic sugar is handled in by read()
 
 bool is_quoted(object *expression) {
@@ -60,7 +60,7 @@ object *text_of_quotation(object *exp) {
     return cadr(exp);
 }
 
-// LISP Primitive: assignment (or 'set!')
+// LISP Primitive: assignment (or 'set!') Helper Functions
 
 bool is_assignment(object *exp) {
     return is_tagged_list(exp, set_symbol());
@@ -74,7 +74,7 @@ object *assignment_value(object *exp) {
     return caddr(exp);
 }
 
-// LISP Primitive: 'define'
+// LISP Primitive: 'define' Helper Functions
 
 bool is_definition(object *exp) {
     return is_tagged_list(exp, define_symbol());
@@ -88,7 +88,7 @@ object *definition_value(object *exp) {
     return is_symbol(cadr(exp)) ? caddr(exp) : make_lambda(cdadr(exp), cddr(exp));
 }
 
-// LISP Primitive 'cond'
+// LISP Primitive 'cond' Helper Functions
 
 object *make_if(object *predicate, object *consequent, object *alternative) {
     return
@@ -146,7 +146,7 @@ object *cond_to_if(object *exp) {
     return expand_clauses(cond_clauses(exp));
 }
 
-// LISP Primitive 'if'
+// LISP Primitive 'if' Helper Functions
 
 bool is_if(object *exp) {
     return is_tagged_list(exp, if_symbol());
@@ -164,7 +164,7 @@ object *if_alternative(object *exp) {
     return is_empty(cdddr(exp)) ? make_boolean(false) : cadddr(exp);
 }
 
-// LISP Primitive 'begin'
+// LISP Primitive 'begin' Helper Functions
 
 object *make_begin(object *exp) {
     return cons(begin_symbol(), exp);
@@ -178,7 +178,11 @@ object *begin_actions(object *exp) {
     return cdr(exp);
 }
 
-// Handle Registered Built-in Primitive Procedures
+// LISP Primitive 'application' (i.e. apply) Helper Functions
+
+object *make_application(object *operator, object *operands) {
+    return cons(operator, operands);
+}
 
 bool is_application(object *exp) {
     return is_pair(exp);
@@ -220,6 +224,52 @@ object *list_of_values(object *exps, object *env) {
     return is_no_operands(exps) ?
         empty_list() :
         cons(eval(first_operand(exps), env), list_of_values(rest_operands(exps), env));
+}
+
+// LISP Primitive 'let' Helper Functions
+
+char is_let(object *exp) {
+    return is_tagged_list(exp, let_symbol());
+}
+
+object *let_bindings(object *exp) {
+    return cadr(exp);
+}
+
+object *let_body(object *exp) {
+    return cddr(exp);
+}
+
+object *binding_parameter(object *binding) {
+    return car(binding);
+}
+
+object *binding_argument(object *binding) {
+    return cadr(binding);
+}
+
+object *bindings_parameters(object *bindings) {
+    return is_empty(bindings) ?
+               empty_list() :
+               cons(binding_parameter(car(bindings)), bindings_parameters(cdr(bindings)));
+}
+
+object *bindings_arguments(object *bindings) {
+    return is_empty(bindings) ?
+               empty_list() :
+               cons(binding_argument(car(bindings)), bindings_arguments(cdr(bindings)));
+}
+
+object *let_parameters(object *exp) {
+    return bindings_parameters(let_bindings(exp));
+}
+
+object *let_arguments(object *exp) {
+    return bindings_arguments(let_bindings(exp));
+}
+
+object *let_to_application(object *exp) {
+    return make_application(make_lambda(let_parameters(exp), let_body(exp)), let_arguments(exp));
 }
 
 // START RECURSIVE EVAL
@@ -279,6 +329,12 @@ object *eval(object *exp, object *env) {
 
         if (is_cond(exp)) {
             exp = cond_to_if(exp);
+            tailcall = true;
+            continue;
+        }
+
+        if (is_let(exp)) {
+            exp = let_to_application(exp);
             tailcall = true;
             continue;
         }

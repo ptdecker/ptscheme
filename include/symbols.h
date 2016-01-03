@@ -17,5 +17,6 @@ extern object *lambda_symbol();
 extern object *begin_symbol();
 extern object *cond_symbol();
 extern object *else_symbol();
+extern object *let_symbol();
 
 #endif // FILE_SYMBOLS_SEEN

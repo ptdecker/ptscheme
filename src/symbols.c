@@ -99,3 +99,10 @@ object *else_symbol() {
         _else_symbol = make_symbol("else");
     return _else_symbol;
 }
+
+object *let_symbol() {
+    static object *_let_symbol = NULL;
+    if (_let_symbol == NULL)
+        _let_symbol = make_symbol("let");
+    return _let_symbol;
+}
