@@ -16,6 +16,7 @@
 #include "repleval.h"
 #include "environments.h"
 #include "primitives.h"
+#include "repleval.h"
 
 // Self Evaluating Symbols
 
@@ -93,6 +94,67 @@ object *definition_value(object *exp) {
     if (is_symbol(cadr(exp)))
         return caddr(exp);
     return make_lambda(cdadr(exp), cddr(exp));
+}
+
+// LISP Primitive 'cond'
+
+object *make_if(object *predicate, object *consequent, object *alternative) {
+    return
+        cons(if_symbol(),
+            cons(predicate,
+                cons(consequent,
+                    cons(alternative, empty_list()))));
+}
+
+char is_cond(object *exp) {
+    return is_tagged_list(exp, cond_symbol());
+}
+
+object *cond_clauses(object *exp) {
+    return cdr(exp);
+}
+
+object *cond_predicate(object *clause) {
+    return car(clause);
+}
+
+object *cond_actions(object *clause) {
+    return cdr(clause);
+}
+
+char is_cond_else_clause(object *clause) {
+    return cond_predicate(clause) == else_symbol();
+}
+
+object *sequence_to_exp(object *seq) {
+    if (is_empty(seq))
+        return seq;
+    if (is_last_exp(seq))
+        return first_exp(seq);
+    return make_begin(seq);
+}
+
+object *expand_clauses(object *clauses) {
+    object *first;
+    object *rest;
+
+    if (is_empty(clauses))
+        return false;
+
+    first = car(clauses);
+    rest  = cdr(clauses);
+    if (is_cond_else_clause(first)) {
+        if (is_empty(rest))
+            return sequence_to_exp(cond_actions(first));
+        fprintf(stderr, "else clause isn't last cond->if");
+        exit(1);
+    } else {
+        return make_if(cond_predicate(first), sequence_to_exp(cond_actions(first)), expand_clauses(rest));
+    }
+}
+
+object *cond_to_if(object *exp) {
+    return expand_clauses(cond_clauses(exp));
 }
 
 // LISP Primitive 'if'
@@ -226,6 +288,12 @@ object *eval(object *exp, object *env) {
                 exp = rest_exps(exp);
             }
             exp = first_exp(exp);
+            tailcall = true;
+            continue;
+        }
+
+        if (is_cond(exp)) {
+            exp = cond_to_if(exp);
             tailcall = true;
             continue;
         }
