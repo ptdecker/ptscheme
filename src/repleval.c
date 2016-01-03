@@ -308,6 +308,16 @@ object *apply_operands(object *arguments) {
     return prepare_apply_operands(cdr(arguments));
 }
 
+// LISP Primitive 'eval' helper functions
+
+object *eval_expression(object *arguments) {
+    return car(arguments);
+}
+
+object *eval_environment(object *arguments) {
+    return cadr(arguments);
+}
+
 // START RECURSIVE EVAL
 
 object *eval_assignment(object *exp, object *env) {
@@ -410,6 +420,13 @@ object *eval(object *exp, object *env) {
         if (is_application(exp)) {
             procedure = eval(operator(exp), env);
             arguments = list_of_values(operands(exp), env);
+
+            if (is_primitive_proc(procedure) && procedure->data.primitive_proc.fn == eval_proc) {
+                exp = eval_expression(arguments);
+                env = eval_environment(arguments);
+                tailcall = true;
+                continue;
+            }
 
             if (is_primitive_proc(procedure) && procedure->data.primitive_proc.fn == apply_proc) {
                 procedure = apply_operator(arguments);

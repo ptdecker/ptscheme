@@ -7,6 +7,7 @@
 #include "lisppair.h"
 #include "lisperr.h"
 #include "environments.h"
+#include "primitives.h"
 
 object *enclosing_environment(object *env) {
     return cdr(env);
@@ -102,13 +103,18 @@ void define_variable(object *var, object *val, object *env) {
 
 object *setup_environment(void) {
     object *initial_env;
-
     initial_env = extend_environment(empty_list(), empty_list(), the_empty_environment);
-
     return initial_env;
+}
+
+object *make_environment(void) {
+    object *env;
+    env = setup_environment();
+    populate_environment(env);
+    return env;
 }
 
 void init_environments() {
     the_empty_environment  = empty_list();
-    the_global_environment = setup_environment();
+    the_global_environment = make_environment();
 }

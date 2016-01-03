@@ -288,19 +288,37 @@ object *is_eq_proc(object *arguments) {
 // LISP Primitive Procedure: 'apply'
 
 object *apply_proc(object *arguments) {
-    fprintf(stderr, "illegal state: The body of the apply "
-            "primitive procedure should not execute.\n");
+    fprintf(stderr, "illegal state: The body of the apply primitive procedure should not execute.\n");
     exit(EXIT_FAILURE);
+}
+
+// LISP Primitive Procedure 'eval'
+
+object *eval_proc(object *arguments) {
+    fprintf(stderr, "illegal state: The body of the eval primitive procedure should not execute.\n");
+    exit(EXIT_FAILURE);
+}
+
+object *interaction_environment_proc(object *arguments) {
+    return the_global_environment;
+}
+
+object *null_environment_proc(object *arguments) {
+    return setup_environment();
+}
+
+object *environment_proc(object *arguments) {
+     return make_environment();
 }
 
 // Macro definition for registering a primitive procedure
 
 #define add_procedure(scheme_name, c_name)       \
-    define_variable(make_symbol(scheme_name), make_primitive_proc(c_name), the_global_environment);
+    define_variable(make_symbol(scheme_name), make_primitive_proc(c_name), env);
 
 // Register all the primitive procedures
 
-void register_primitives() {
+void populate_environment(object *env) {
 
     add_procedure("null?"     , is_null_proc);
     add_procedure("boolean?"  , is_boolean_proc);
@@ -337,4 +355,9 @@ void register_primitives() {
     add_procedure("eq?", is_eq_proc);
 
     add_procedure("apply", apply_proc);
+
+    add_procedure("interaction-environment", interaction_environment_proc);
+    add_procedure("null-environment", null_environment_proc);
+    add_procedure("environment"     , environment_proc);
+    add_procedure("eval"            , eval_proc);
 }
