@@ -35,20 +35,18 @@ bool is_variable(object *expression) {
 }
 
 bool is_bound(object *expression, object *env) {
-    if (is_variable(expression))
-        return !is_error(lookup_variable_value(expression, env));
-    return false;
+    return is_variable(expression) ? !is_error(lookup_variable_value(expression, env)) : false;
 }
 
 // A tagged list is a pair whose car is a specified symbol. The value of
 // the tagged list is the cdr of the pair
 bool is_tagged_list(object *expression, object *tag) {
     object *the_car;
-    if (is_pair(expression)) {
-        the_car = car(expression);
-        return is_symbol(the_car) && (the_car == tag);
-    }
-    return false;
+    if (!is_pair(expression))
+        return false;
+
+    the_car = car(expression);
+    return is_symbol(the_car) && (the_car == tag);
 }
 
 // LISP Primitive: 'quote'
@@ -82,18 +80,12 @@ bool is_definition(object *exp) {
     return is_tagged_list(exp, define_symbol());
 }
 
-//TODO: Refactor return to a trinary
 object *definition_variable(object *exp) {
-    if (is_symbol(cadr(exp)))
-        return cadr(exp);
-    return caadr(exp);
+    return is_symbol(cadr(exp)) ? cadr(exp) : caadr(exp);
 }
 
-//TODO: Refactor return to a trinary
 object *definition_value(object *exp) {
-    if (is_symbol(cadr(exp)))
-        return caddr(exp);
-    return make_lambda(cdadr(exp), cddr(exp));
+    return is_symbol(cadr(exp)) ? caddr(exp) : make_lambda(cdadr(exp), cddr(exp));
 }
 
 // LISP Primitive 'cond'
@@ -127,11 +119,7 @@ char is_cond_else_clause(object *clause) {
 }
 
 object *sequence_to_exp(object *seq) {
-    if (is_empty(seq))
-        return seq;
-    if (is_last_exp(seq))
-        return first_exp(seq);
-    return make_begin(seq);
+    return is_empty(seq) ? seq : (is_last_exp(seq) ? first_exp(seq) : make_begin(seq));
 }
 
 object *expand_clauses(object *clauses) {
@@ -143,14 +131,15 @@ object *expand_clauses(object *clauses) {
 
     first = car(clauses);
     rest  = cdr(clauses);
-    if (is_cond_else_clause(first)) {
-        if (is_empty(rest))
-            return sequence_to_exp(cond_actions(first));
-        fprintf(stderr, "else clause isn't last cond->if");
-        exit(1);
-    } else {
+
+    if (!is_cond_else_clause(first))
         return make_if(cond_predicate(first), sequence_to_exp(cond_actions(first)), expand_clauses(rest));
-    }
+
+    if (is_empty(rest))
+        return sequence_to_exp(cond_actions(first));
+
+    fprintf(stderr, "else clause isn't last cond->if");
+    exit(EXIT_FAILURE);
 }
 
 object *cond_to_if(object *exp) {
@@ -172,11 +161,7 @@ object *if_consequent(object *exp) {
 }
 
 object *if_alternative(object *exp) {
-
-    if (is_empty(cdddr(exp)))
-        return make_boolean(false);
-
-    return cadddr(exp);
+    return is_empty(cdddr(exp)) ? make_boolean(false) : cadddr(exp);
 }
 
 // LISP Primitive 'begin'
@@ -232,9 +217,9 @@ object *rest_operands(object *ops) {
 }
 
 object *list_of_values(object *exps, object *env) {
-    if (is_no_operands(exps))
-        return empty_list();
-    return cons(eval(first_operand(exps), env), list_of_values(rest_operands(exps), env));
+    return is_no_operands(exps) ?
+        empty_list() :
+        cons(eval(first_operand(exps), env), list_of_values(rest_operands(exps), env));
 }
 
 // START RECURSIVE EVAL
