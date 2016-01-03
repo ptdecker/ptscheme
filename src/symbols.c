@@ -106,3 +106,17 @@ object *let_symbol() {
         _let_symbol = make_symbol("let");
     return _let_symbol;
 }
+
+object *and_symbol() {
+    static object *_let_symbol = NULL;
+    if (_let_symbol == NULL)
+        _let_symbol = make_symbol("and");
+    return _let_symbol;
+}
+
+object *or_symbol() {
+    static object *_let_symbol = NULL;
+    if (_let_symbol == NULL)
+        _let_symbol = make_symbol("or");
+    return _let_symbol;
+}
