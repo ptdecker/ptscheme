@@ -80,7 +80,7 @@ object *lambda_body(object *exp) {
 
 int main(void) {
     init_environments();
-    register_primitives();
+//    register_primitives();
     printf("ptscheme v0.0.1\n");
     printf("Ctrl-c to exit\n\n");
     while(true) {
