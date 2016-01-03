@@ -272,6 +272,26 @@ object *let_to_application(object *exp) {
     return make_application(make_lambda(let_parameters(exp), let_body(exp)), let_arguments(exp));
 }
 
+// LISP Primitive 'and' helper functions
+
+bool is_and(object *exp) {
+    return is_tagged_list(exp, and_symbol());
+}
+
+object *and_tests(object *exp) {
+    return cdr(exp);
+}
+
+// LISP Primitive 'or' helper functions
+
+bool is_or(object *exp) {
+    return is_tagged_list(exp, or_symbol());
+}
+
+object *or_tests(object *exp) {
+    return cdr(exp);
+}
+
 // START RECURSIVE EVAL
 
 object *eval_assignment(object *exp, object *env) {
@@ -288,6 +308,7 @@ object *eval(object *exp, object *env) {
 
     object *procedure;
     object *arguments;
+    object *result;
     bool tailcall = false;
 
     do {
@@ -335,6 +356,37 @@ object *eval(object *exp, object *env) {
 
         if (is_let(exp)) {
             exp = let_to_application(exp);
+            tailcall = true;
+            continue;
+        }
+
+        if (is_and(exp)) {
+            exp = and_tests(exp);
+            if (is_empty(exp))
+                 return make_boolean(true);
+            while (!is_last_exp(exp)) {
+                result = eval(first_exp(exp), env);
+                if (is_false(result))
+                    return result;
+                exp = rest_exps(exp);
+            }
+            exp = first_exp(exp);
+            tailcall = true;
+            continue;
+        }
+
+        if (is_or(exp)) {
+            exp = or_tests(exp);
+            if (is_empty(exp)) {
+                return make_boolean(false);
+            }
+            while (!is_last_exp(exp)) {
+                result = eval(first_exp(exp), env);
+                if (is_true(result))
+                    return result;
+                exp = rest_exps(exp);
+            }
+            exp = first_exp(exp);
             tailcall = true;
             continue;
         }

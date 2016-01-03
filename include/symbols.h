@@ -18,5 +18,7 @@ extern object *begin_symbol();
 extern object *cond_symbol();
 extern object *else_symbol();
 extern object *let_symbol();
+extern object *and_symbol();
+extern object *or_symbol();
 
 #endif // FILE_SYMBOLS_SEEN
