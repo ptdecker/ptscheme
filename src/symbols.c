@@ -80,8 +80,22 @@ object *lambda_symbol() {
 }
 
 object *begin_symbol() {
-    static object *_lambda_symbol = NULL;
-    if (_lambda_symbol == NULL)
-        _lambda_symbol = make_symbol("begin");
-    return _lambda_symbol;
+    static object *_begin_symbol = NULL;
+    if (_begin_symbol == NULL)
+        _begin_symbol = make_symbol("begin");
+    return _begin_symbol;
+}
+
+object *cond_symbol() {
+    static object *_cond_symbol = NULL;
+    if (_cond_symbol == NULL)
+        _cond_symbol = make_symbol("cond");
+    return _cond_symbol;
+}
+
+object *else_symbol() {
+    static object *_else_symbol = NULL;
+    if (_else_symbol == NULL)
+        _else_symbol = make_symbol("else");
+    return _else_symbol;
 }
