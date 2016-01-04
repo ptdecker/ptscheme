@@ -15,6 +15,8 @@ The basic interpreter now functions; however, a standard library has not yet bee
 Also, there are numerous clean-up tasks and enhancements I would like to complete before calling
 it a "1.0" version.
 
+Release notes can be found off the [project wiki](https://github.com/ptdecker/ptscheme/wiki): [here](https://github.com/ptdecker/ptscheme/wiki/Release-Notes).
+
 ### Getting things running
 
 The following instructions have been tested on OS X v10.10.5.  I'm sure they assume that certain

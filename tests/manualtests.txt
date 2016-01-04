@@ -176,15 +176,14 @@ ok
 > (eval 'z env)
 25
 > (exit)
-$
+$ echo $?
+0
 $ ./ptscheme
 > (exit "fail")
 Terminal Error: "fail"
-$
-$ ./ptscheme || echo "non-zero error code"
+$ echo $?
+1
+$ ./ptscheme
 > (exit 5)
-non-zero error code
-$
-$ ./ptscheme || echo "non-zero error code"
-> (exit)
-$
+$ echo $?
+5
