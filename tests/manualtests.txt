@@ -1,0 +1,190 @@
+$ ./ptscheme
+> 123
+123
+> -123
+-123
+> 007
+7
+> #t
+#t
+> #f
+#f
+> #'a'
+#'a'
+> #'\n'
+#'\n'
+> #'    ' (tab)
+#'\t'
+> "asdf"
+"asdf"
+> "asdf\"asdf"
+"asdf\"asdf"
+> "asdf\n"
+"asdf\n"
+> "asdf
+
+    hello   (tab)
+there"
+"asdf\n\n\thello\nthere"
+> ()
+()
+> (quote a)
+a
+> 'a
+a
+> (quote (0 1 2))
+(0 1 2)
+> '(0 1 2)
+(0 1 2)
+> '()
+()
+> '#t
+#t
+> '123
+123
+> '#'x'
+#'x'
+> '"asdf"
+"asdf"
+> (define a 0)
+ok
+> a
+0
+> (set! a 1)
+ok
+> a
+1
+> (define a 2)
+ok
+> a
+2
+> (set! b 3)
+unbound variable
+$
+$ ./ptscheme
+> (if #t 1 2)
+1
+> (if #t 'a 'b)
+a
+> (if #f 1 2)
+2
+> (if #t 1)
+1
+> (if #f 1)
+#f
+> (if 0 1 2)
+1
+> (+ 1 2 3)
+6
+> (+ 3 -1)
+2
+> +
+#<procedure>
+> (boolean? #t)
+#t
+> (integer->char 99)
+#'c'
+> (< 1 2 3)
+#t
+> (cons 'a 'b)
+(a . b)
+> (define (map proc items)
+    (if (null? items)
+        '()
+        (cons (proc (car items))
+              (map proc (cdr items)))))
+ok
+> (define (double x)
+    (* 2 x))
+ok
+> (map double '(0 1 2 3))
+(0 2 4 6)
+> (define count
+    ((lambda (total)
+       (lambda (increment)
+         (set! total (+ total increment))
+         total))
+     0))
+ok
+> (count 3)
+3
+> (count 5)
+8
+> (define (factorial n)
+    (define (iter product counter max-count)
+      (if (> counter max-count)
+          product
+          (iter (* counter product)
+                (+ counter 1)
+                max-count)))
+    (iter 1 1 n))
+ok
+> (factorial 4)
+24
+> (define Y
+    (lambda (f)
+      ((lambda (x) (f (lambda (y) ((x x) y))))
+       (lambda (x) (f (lambda (y) ((x x) y)))))))
+ok
+> (define factorial
+    (Y (lambda (fact)
+         (lambda (n)
+           (if (= n 0)
+               1
+               (* n (fact (- n 1))))))))
+ok
+> (factorial 5)
+120
+> (begin 1 2 3)
+3
+> (cond (#f          1)
+        ((eq? 'a 'a) 2)
+        (else        3))
+2
+> (let ((x (+ 1 1))
+        (y (- 5 2)))
+    (+ x y))
+5
+> (and 1 2 3)
+3
+> (and)
+#t
+> (or #f 2 #t)
+2
+> (or)
+#f
+> (define a 1)
+ok
+> (and #f (set! a 2))
+#f
+> a
+1
+> (and #t (set! a 2))
+ok
+> a
+2
+> (apply + '(1 2 3))
+6
+> (apply + 1 2 '(3))
+6
+> (apply + 1 2 3 '())
+6
+> (define env (environment))
+ok
+> (eval '(define z 25) env)
+ok
+> (eval 'z env)
+25
+> (exit)
+$
+$ ./ptscheme
+> (exit "fail")
+Terminal Error: "fail"
+$
+$ ./ptscheme || echo "non-zero error code"
+> (exit 5)
+non-zero error code
+$
+$ ./ptscheme || echo "non-zero error code"
+> (exit)
+$

@@ -31,11 +31,13 @@ Build:
 
     $ make
 
-Test (not full coverage):
+Test (no coverage for now):
 
     $ make clean
     $ make
     $ make test
+
+NOTE: A more complete set of manual test can be found in './tests/manualtests.txt'
 
 Run:
 
