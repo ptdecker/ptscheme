@@ -14,5 +14,6 @@ extern object *extend_environment(object *vars, object *vals, object *base_env);
 
 extern object *the_empty_environment;
 extern object *the_global_environment;
+extern object *eof_object;
 
 #endif // !FILE_ENVIRONMENTS_SEEN

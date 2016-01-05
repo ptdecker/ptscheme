@@ -40,6 +40,7 @@
 
 object *the_empty_environment;
 object *the_global_environment;
+object *eof_object;
 
 /* Lambda support (lambda.c) */
 

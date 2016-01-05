@@ -325,7 +325,7 @@ object *exit_proc(object *arguments) {
     exit(EXIT_FAILURE);
 }
 
-// ptscheme Primitive Procedure 'load'
+// LISP Primitive Procedures for IO system
 
 object *load_proc(object *arguments) {
     char *filename;
@@ -344,6 +344,34 @@ object *load_proc(object *arguments) {
 
     fclose(in);
     return result;
+}
+
+object *make_input_port(FILE *stream) {
+    object *obj;
+    obj = alloc_object();
+    obj->type = INPUT_PORT;
+    obj->data.input_port.stream = stream;
+    return obj;
+}
+
+bool is_input_port(object *obj) {
+    return obj->type == INPUT_PORT;
+}
+
+object *make_output_port(FILE *stream) {
+    object *obj;
+    obj = alloc_object();
+    obj->type = OUTPUT_PORT;
+    obj->data.output_port.stream = stream;
+    return obj;
+}
+
+bool is_output_port(object *obj) {
+    return obj->type == OUTPUT_PORT;
+}
+
+bool is_eof_object(object *obj) {
+    return obj == eof_object;
 }
 
 // Macro definition for registering a primitive procedure
