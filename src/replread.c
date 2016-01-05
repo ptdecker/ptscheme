@@ -353,6 +353,10 @@ object *read(FILE *in) {
         return cons(quote_symbol(), cons(read(in), empty_list()));
     }
 
+    if (c == EOF) {
+        return NULL;
+    }
+
     // We should have handled everything by now, if not then illegal state
 
     flush_input(in);

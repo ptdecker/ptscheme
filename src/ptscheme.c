@@ -80,13 +80,16 @@ object *lambda_body(object *exp) {
 /* REPL */
 
 int main(void) {
+    object *exp;
     init_environments();
-//    register_primitives();
-    printf("ptscheme v0.0.1\n");
-    printf("Ctrl-c to exit\n\n");
+    printf("ptscheme v0.1\n");
+    printf("Use Ctrl-C or '(exit)'' to exit\n\n");
     while(true) {
         printf("> ");
-        write(eval(read(stdin), the_global_environment));
+        exp = read (stdin);
+        if (exp == NULL)
+            break;
+        write(eval(exp, the_global_environment));
         printf("\n");
     }
     exit(EXIT_SUCCESS);

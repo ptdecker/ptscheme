@@ -14,6 +14,8 @@
 #include "lisperr.h"
 #include "symbols.h"
 #include "environments.h"
+#include "replread.h"
+#include "repleval.h"
 
 object *make_primitive_proc(object *(*fn)(struct object *arguments)) {
     object *obj;
@@ -323,6 +325,27 @@ object *exit_proc(object *arguments) {
     exit(EXIT_FAILURE);
 }
 
+// ptscheme Primitive Procedure 'load'
+
+object *load_proc(object *arguments) {
+    char *filename;
+    FILE *in;
+    object *exp;
+    object *result;
+
+    filename = car(arguments)->data.string.value;
+    in = fopen(filename, "r");
+
+    if (in == NULL)
+        return make_error(88, "could not load file");
+
+    while ((exp = read(in)) != NULL)
+        result = eval(exp, the_global_environment);
+
+    fclose(in);
+    return result;
+}
+
 // Macro definition for registering a primitive procedure
 
 #define add_procedure(scheme_name, c_name)       \
@@ -374,4 +397,6 @@ void populate_environment(object *env) {
     add_procedure("eval"                   , eval_proc);
 
     add_procedure("exit", exit_proc);
+
+    add_procedure("load", load_proc);
 }
