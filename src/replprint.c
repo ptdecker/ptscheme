@@ -92,8 +92,17 @@ void write(object *obj) {
         case EMPTY_LIST:
             printf("()");
             break;
+        case EOF_OBJECT:
+            printf("#<EOF>");
+            break;
         case FIXNUM:
             printf("%ld", obj->data.fixnum.value);
+            break;
+        case INPUT_PORT:
+            printf("#<input-port>");
+            break;
+        case OUTPUT_PORT:
+            printf("#<output-port>");
             break;
         case PAIR:
             printf("(");
