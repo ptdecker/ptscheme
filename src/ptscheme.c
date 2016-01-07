@@ -83,14 +83,14 @@ object *lambda_body(object *exp) {
 int main(void) {
     object *exp;
     init_environments();
-    printf("ptscheme v0.1\n");
+    printf("ptscheme v0.2\n");
     printf("Use Ctrl-C or '(exit)'' to exit\n\n");
     while(true) {
         printf("> ");
         exp = read (stdin);
         if (exp == NULL)
             break;
-        write(eval(exp, the_global_environment));
+        write(stdout, eval(exp, the_global_environment));
         printf("\n");
     }
     exit(EXIT_SUCCESS);
