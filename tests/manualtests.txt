@@ -201,4 +201,65 @@ ok
 2
 > (exit)
 $ rm test.scm
+$ ./ptscheme
+> (define out (open-output-port "asdf.txt"))
+ok
+> (input-port? out)
+#f
+> (output-port? out)
+#t
+> out
+#<output-port>
+> (write "hello world" out)
+ok
+> (write-char #'\n' out)
+ok
+> (close-output-port out)
+ok
+> (error "oh my")
+"oh my"
+$ echo $?
+1
+$ cat asdf.txt
+"hello world"
+$ ./ptscheme
+> (define in (open-input-port "asdf.txt"))
+ok
+> (input-port? in)
+#t
+> (output-port? in)
+#f
+> in
+#<input-port>
+> (define a (read in))
+ok
+> a
+"hello world"
+> (eof-object? a)
+#f
+> (define b (peek-char in))
+ok
+> (eof-object? b)
+#f
+> b
+#'\n'
+> (eof-object? b)
+#f
+> (define c (read-char in))
+ok
+> (eof-object? c)
+#f
+> c
+#'\n'
+> (define d (read in))
+ok
+> (eof-object? d)
+#t
+> d
+#<eof>
+> (close-input-port in)
+ok
+> (exit)
+$ rm asdf.txt
 $
+

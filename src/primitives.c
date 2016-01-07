@@ -448,10 +448,9 @@ object *error_proc(object *arguments) {
     while (!is_empty(arguments)) {
         write(stderr, car(arguments));
         fprintf(stderr, " ");
+        fputc('\n', stderr);
         arguments = cdr(arguments);
     };
-    exit_proc(arguments);
-    // should never reach here
     exit(EXIT_FAILURE);
 }
 
