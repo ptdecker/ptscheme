@@ -9,6 +9,11 @@
 
 #define BUFFER_MAX 1000
 
+/* Library includes */
+
+#include <stdbool.h>
+#include <stdio.h>
+
 /* Type declarations */
 
 typedef enum {
@@ -16,7 +21,10 @@ typedef enum {
     CHARACTER,
     COMPOUND_PROC,
     EMPTY_LIST,
+    EOF_OBJECT,
     FIXNUM,
+    INPUT_PORT,
+    OUTPUT_PORT,
     PAIR,
     PRIMITIVE_PROC,
     STRING,
@@ -42,8 +50,17 @@ typedef struct object {
             // Empty
         } empty;
         struct {
+            // Empty
+        } eof_object;
+        struct {
             long value;
         } fixnum;
+        struct {
+            FILE *stream;
+        } input_port;
+        struct {
+            FILE *stream;
+        } output_port;
         struct {
             struct object *car;
             struct object *cdr;
@@ -65,8 +82,6 @@ typedef struct object {
 } object;
 
 /* Lambda suport (lambda.h) */
-
-#include <stdbool.h>
 
 extern object *make_compound_proc(object *parameters, object *body, object* env);
 extern bool is_compound_proc(object *obj);

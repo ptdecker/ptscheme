@@ -6,7 +6,7 @@
 /* REPL - Print */
 
 extern void expand_esc_seq(char str[], const char c);
-extern void write_pair(object *pair);
-extern void write(object *obj);
+extern void write_pair(FILE *out, object *pair);
+extern void write(FILE *out, object *obj);
 
 #endif // FILE_REPLPRINT_SEEN/

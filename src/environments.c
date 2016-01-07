@@ -8,6 +8,7 @@
 #include "lisperr.h"
 #include "environments.h"
 #include "primitives.h"
+#include "memmanager.h"
 
 object *enclosing_environment(object *env) {
     return cdr(env);
@@ -117,4 +118,6 @@ object *make_environment(void) {
 void init_environments() {
     the_empty_environment  = empty_list();
     the_global_environment = make_environment();
+    eof_object = alloc_object();
+    eof_object->type = EOF_OBJECT;
 }

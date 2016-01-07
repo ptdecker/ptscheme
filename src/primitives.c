@@ -14,6 +14,9 @@
 #include "lisperr.h"
 #include "symbols.h"
 #include "environments.h"
+#include "replread.h"
+#include "repleval.h"
+#include "replprint.h"
 
 object *make_primitive_proc(object *(*fn)(struct object *arguments)) {
     object *obj;
@@ -323,6 +326,183 @@ object *exit_proc(object *arguments) {
     exit(EXIT_FAILURE);
 }
 
+// LISP Primitive Procedures for IO system
+
+object *load_proc(object *arguments) {
+    char *filename;
+    FILE *in;
+    object *exp;
+    object *result;
+
+    filename = car(arguments)->data.string.value;
+    in = fopen(filename, "r");
+
+    if (in == NULL)
+        return make_error(88, "could not load file");
+
+    while ((exp = read(in)) != NULL)
+        result = eval(exp, the_global_environment);
+
+    fclose(in);
+    return result;
+}
+
+object *make_input_port(FILE *stream) {
+    object *obj;
+    obj = alloc_object();
+    obj->type = INPUT_PORT;
+    obj->data.input_port.stream = stream;
+    return obj;
+}
+
+bool is_input_port(object *obj) {
+    return obj->type == INPUT_PORT;
+}
+
+object *make_output_port(FILE *stream) {
+    object *obj;
+    obj = alloc_object();
+    obj->type = OUTPUT_PORT;
+    obj->data.output_port.stream = stream;
+    return obj;
+}
+
+bool is_output_port(object *obj) {
+    return obj->type == OUTPUT_PORT;
+}
+
+bool is_eof_object(object *obj) {
+    return obj == eof_object;
+}
+
+object *open_input_port_proc(object *arguments) {
+    char *filename;
+    FILE *in;
+    filename = car(arguments)->data.string.value;
+    in = fopen(filename, "r");
+    if (in == NULL) {
+        fprintf(stderr, "could not open file \"%s\"\n", filename);
+        exit(1);
+    }
+    return make_input_port(in);
+}
+
+object *close_input_port_proc(object *arguments) {
+    int result;
+    result = fclose(car(arguments)->data.input_port.stream);
+    if (result == EOF) {
+        fprintf(stderr, "could not close input port\n");
+        exit(1);
+    }
+    return ok_symbol();
+}
+
+object *is_input_port_proc(object *arguments) {
+    return make_boolean(is_input_port(car(arguments)));
+}
+
+object *open_output_port_proc(object *arguments) {
+    char *filename;
+    FILE *out;
+    filename = car(arguments)->data.string.value;
+    out = fopen(filename, "w");
+    if (out == NULL) {
+        fprintf(stderr, "could not open file \"%s\"\n", filename);
+        exit(1);
+    }
+    return make_output_port(out);
+}
+
+object *close_output_port_proc(object *arguments) {
+    int result;
+    result = fclose(car(arguments)->data.output_port.stream);
+    if (result == EOF) {
+        fprintf(stderr, "could not close output port\n");
+        exit(1);
+    }
+    return ok_symbol();
+}
+
+object *is_output_port_proc(object *arguments) {
+    return make_boolean(is_output_port(car(arguments)));
+}
+
+object *write_char_proc(object *arguments) {
+    object *character;
+    FILE *out;
+    character = car(arguments);
+    arguments = cdr(arguments);
+    out = is_empty(arguments) ?
+             stdout :
+             car(arguments)->data.output_port.stream;
+    putc(character->data.character.value, out);
+    fflush(out);
+    return ok_symbol();
+}
+
+object *is_eof_object_proc(object *arguments) {
+    return make_boolean(is_eof_object(car(arguments)));
+}
+
+object *error_proc(object *arguments) {
+    while (!is_empty(arguments)) {
+        write(stderr, car(arguments));
+        fprintf(stderr, " ");
+        arguments = cdr(arguments);
+    };
+    exit_proc(arguments);
+    // should never reach here
+    exit(EXIT_FAILURE);
+}
+
+object *read_char_proc(object *arguments) {
+    FILE *in;
+    int result;
+    in = is_empty(arguments) ?
+             stdin :
+             car(arguments)->data.input_port.stream;
+    result = getc(in);
+    return (result == EOF) ? eof_object : make_character(result);
+}
+
+object *peek_char_proc(object *arguments) {
+    FILE *in;
+    int result;
+    in = is_empty(arguments) ?
+             stdin :
+             car(arguments)->data.input_port.stream;
+    result = peek(in);
+    return (result == EOF) ? eof_object : make_character(result);
+}
+
+// Lisp Primitive Procedure: 'write'
+
+object *write_proc(object *arguments) {
+    object *exp;
+    FILE *out;
+
+    exp = car(arguments);
+    arguments = cdr(arguments);
+    out = is_empty(arguments) ?
+             stdout :
+             car(arguments)->data.output_port.stream;
+    write(out, exp);
+    fflush(out);
+    return ok_symbol();
+}
+
+// Lisp Primitive Procedure: 'read'
+
+object *read_proc(object *arguments) {
+    FILE *in;
+    object *result;
+    in = is_empty(arguments) ?
+             stdin :
+             car(arguments)->data.input_port.stream;
+    result = read(in);
+    return (result == NULL) ? eof_object : result;
+}
+
 // Macro definition for registering a primitive procedure
 
 #define add_procedure(scheme_name, c_name)       \
@@ -374,4 +554,20 @@ void populate_environment(object *env) {
     add_procedure("eval"                   , eval_proc);
 
     add_procedure("exit", exit_proc);
+
+    add_procedure("load"              , load_proc);
+    add_procedure("open-input-port"   , open_input_port_proc);
+    add_procedure("close-input-port"  , close_input_port_proc);
+    add_procedure("eof-object?"       , is_eof_object_proc);
+    add_procedure("open-output-port"  , open_output_port_proc);
+    add_procedure("close-output-port" , close_output_port_proc);
+    add_procedure("input-port?"       , is_input_port_proc);
+    add_procedure("output-port?"      , is_output_port_proc);
+    add_procedure("write-char"        , write_char_proc);
+    add_procedure("error"             , error_proc);
+    add_procedure("read-char"         , read_char_proc);
+    add_procedure("peek-char"         , peek_char_proc);
+    add_procedure("write"             , write_proc);
+    add_procedure("read"              , read_proc);
+
 }

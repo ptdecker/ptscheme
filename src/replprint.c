@@ -57,69 +57,80 @@ void expand_esc_seq(char str[], const char c) {
 } // expand_esc_seq
 
 // TODO: The code below smells
-void write_pair(object *pair) {
+void write_pair(FILE *out, object *pair) {
     object *car_obj;
     object *cdr_obj;
 
     car_obj = car(pair);
     cdr_obj = cdr(pair);
-    write(car_obj);
+    write(out, car_obj);
     if (cdr_obj->type == PAIR) {
-        printf(" ");
-        write_pair(cdr_obj);
+        fprintf(out, " ");
+        write_pair(out, cdr_obj);
     } else if (cdr_obj->type == EMPTY_LIST)
         return;
     else {
-        printf(" . ");
-        write(cdr_obj);
+        fprintf(out, " . ");
+        write(out, cdr_obj);
     }
 }
 
-void write(object *obj) {
+void write(FILE *out, object *obj) {
 
     char *str  = NULL;
     char str2[5];
 
     switch (obj->type) {
         case BOOLEAN:
-            printf("#%c", is_false(obj) ? 'f' : 't');
+            fprintf(out, "#%c", is_false(obj) ? 'f' : 't');
             break;
         case CHARACTER:
             str2[0] = '\0';
             expand_esc_seq(str2, obj->data.character.value);
-            printf("#'%s'", str2);
-            break;
-        case EMPTY_LIST:
-            printf("()");
-            break;
-        case FIXNUM:
-            printf("%ld", obj->data.fixnum.value);
-            break;
-        case PAIR:
-            printf("(");
-            write_pair(obj);
-            printf(")");
+            fprintf(out, "#'%s'", str2);
             break;
         case COMPOUND_PROC:
+            fprintf(out, "#<compound-procedure>");
+            break;
+        case EMPTY_LIST:
+            fprintf(out, "()");
+            break;
+        case EOF_OBJECT:
+            fprintf(out, "#<eof>");
+            break;
+        case FIXNUM:
+            fprintf(out, "%ld", obj->data.fixnum.value);
+            break;
+        case INPUT_PORT:
+            fprintf(out, "#<input-port>");
+            break;
+        case OUTPUT_PORT:
+            fprintf(out, "#<output-port>");
+            break;
+        case PAIR:
+            fprintf(out, "(");
+            write_pair(out, obj);
+            fprintf(out, ")");
+            break;
         case PRIMITIVE_PROC:
-            printf("#<procedure>");
+            fprintf(out, "#<primitive-procedure>");
             break;
         case STRING:
             str = obj->data.string.value;
-            putchar('"');
+            fputc('"', out);
             while (*str != '\0') {
                 str2[0] = '\0';
                 expand_esc_seq(str2, *str);
-                printf("%s", str2);
+                fprintf(out, "%s", str2);
                 str++;
             }
-            putchar('"');
+            fputc('"', out);
             break;
         case SYMBOL:
-            printf("%s", obj->data.symbol.value);
+            fprintf(out, "%s", obj->data.symbol.value);
             break;
         case ERROR:
-            printf("Error %ld: %s", obj->data.error.error_num, obj->data.error.error_msg);
+            fprintf(out, "Error %ld: %s", obj->data.error.error_num, obj->data.error.error_msg);
             break;
         default:
             fprintf(stderr, "cannot write unknown type\n");
