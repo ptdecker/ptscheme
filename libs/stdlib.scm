@@ -64,3 +64,6 @@
 
 (define (not x)
   (if x #f #t))
+
+(define (/ x y)
+  (quotient x y))
