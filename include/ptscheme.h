@@ -23,6 +23,7 @@ typedef enum {
     EMPTY_LIST,
     EOF_OBJECT,
     FIXNUM,
+    FLOATNUM,
     INPUT_PORT,
     OUTPUT_PORT,
     PAIR,
@@ -55,6 +56,9 @@ typedef struct object {
         struct {
             long value;
         } fixnum;
+        struct {
+            double value;
+        } floatnum;
         struct {
             FILE *stream;
         } input_port;
