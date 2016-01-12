@@ -4,10 +4,12 @@
 #include <strings.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "ptscheme.h"
 #include "memmanager.h"
 #include "lisppair.h"
 #include "lispint.h"
+#include "lispfloat.h"
 #include "lispbool.h"
 #include "lispchar.h"
 #include "lispstr.h"
@@ -52,6 +54,12 @@ object *is_symbol_proc(object *arguments) {
 
 object *is_integer_proc(object *arguments) {
     return make_boolean(is_fixnum(car(arguments)));
+}
+
+// LISP Primitive Procedure: 'real?'
+
+object *is_real_proc(object *arguments) {
+    return make_boolean(is_floatnum(car(arguments)));
 }
 
 // LISP Primitive Procedure: 'char?'
@@ -122,25 +130,65 @@ object *string_to_symbol_proc(object *arguments) {
 // LISP Primitive Procedure: '+'
 
 object *add_proc(object *arguments) {
-    long result = 0;
+    long   result = 0;
+    double result2 = 0.0;
+    bool   real = false;
 
     while (!is_empty(arguments)) {
-        result += (car(arguments))->data.fixnum.value;
+        real = is_floatnum(car(arguments));
+        if (real)
+            result2 += (car(arguments))->data.floatnum.value;
+        else
+            result += (car(arguments))->data.fixnum.value;
         arguments = cdr(arguments);
     }
-    return make_fixnum(result);
+
+    if ((real || (result2 != 0.0)) && fmod(result2, 1) != 0.0)
+        return make_floatnum(result2 + (double)result);
+    else if (real || (result2 != 0.0))
+        return make_fixnum(lround(result2 + (double)result));
+    else
+        return make_fixnum(result);
 }
 
 // LISP Primitive Procedure: '-'
 
 object *sub_proc(object *arguments) {
     long result;
+    double result2 = 0.0;
+    bool   real_mode = false;
+    bool   real = false;
 
-    result = (car(arguments))->data.fixnum.value;
+    real = is_floatnum(car(arguments));
+    if (real) {
+        real_mode = true;
+        result2 = (car(arguments))->data.floatnum.value;
+    } else
+        result = (car(arguments))->data.fixnum.value;
+
     while (!is_empty(arguments = cdr(arguments))) {
-        result -= (car(arguments))->data.fixnum.value;
+        if (real_mode) {
+            real = is_floatnum(car(arguments));
+            if (real)
+                result2 -= (car(arguments))->data.floatnum.value;
+            else
+                result2 -= (double)(car(arguments))->data.fixnum.value;
+        } else {
+            real = is_floatnum(car(arguments));
+            if (real) {
+                result2 = (double)result - (car(arguments))->data.floatnum.value;
+                real_mode = true;
+            } else
+                result -= (car(arguments))->data.fixnum.value;
+        }
     }
-    return make_fixnum(result);
+
+    if (real_mode && fmod(result2, 1) != 0.0)
+        return make_floatnum(result2);
+    else if (real_mode)
+        return make_fixnum(lround(result2));
+    else
+        return make_fixnum(result);
 }
 
 // LISP Primitive Procedure: '*'
@@ -515,6 +563,7 @@ void populate_environment(object *env) {
     add_procedure("boolean?"  , is_boolean_proc);
     add_procedure("symbol?"   , is_symbol_proc);
     add_procedure("integer?"  , is_integer_proc);
+    add_procedure("real?"     , is_real_proc);
     add_procedure("char?"     , is_char_proc);
     add_procedure("string?"   , is_string_proc);
     add_procedure("pair?"     , is_pair_proc);
