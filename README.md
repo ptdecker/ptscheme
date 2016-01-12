@@ -1,4 +1,4 @@
-ptscheme v0.2
+ptscheme v0.3
 =============
 
 [![Build Status](https://travis-ci.org/ptdecker/ptscheme.svg?branch=master)](https://travis-ci.org/ptdecker/ptscheme)
