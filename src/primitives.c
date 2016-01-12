@@ -235,10 +235,6 @@ object *quotient_proc(object *arguments) {
 // LISP Primitive Procedure: 'remainder'
 
 object *remainder_proc(object *arguments) {
-//    return make_fixnum(
-//            ((car(arguments) )->data.fixnum.value) %
-//            ((cadr(arguments))->data.fixnum.value)
-//        );
     if (is_floatnum(car(arguments)) || is_floatnum(cadr(arguments))) {
         return make_floatnum(
                 fmod((is_floatnum(car(arguments))  ? (car(arguments))->data.floatnum.value  : (double)(car(arguments))->data.fixnum.value),

@@ -24,6 +24,7 @@
  *              - Handled 'quote', 'define', 'set', 'ok', 'if', 'lambda' symbols as singletons too
  *              - Avoided goto-based tail recurrsion call approach
  *              - Included an 'exit' primitive
+ *              - Extended numeric support to include floating point support (IEEE 754 double precision)
  */
 
 /* Define directives */

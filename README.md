@@ -66,3 +66,4 @@ The following changes have been made from Michaux:
 * Implemented hash table-based symbol table [O(1)] as opposed to reusing pairs approach [O(n)]
 * Avoided goto-based tail recurrsion call approach
 * Included an 'exit' primitive
+* Extended numeric support to include floating point support (IEEE 754 double precision)
