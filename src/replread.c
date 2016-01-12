@@ -11,6 +11,7 @@
 #include "lispbool.h"
 #include "lispchar.h"
 #include "lispint.h"
+#include "lispfloat.h"
 #include "lispstr.h"
 #include "lisperr.h"
 #include "lisppair.h"
@@ -105,8 +106,10 @@ object *read_character(FILE *in) {
 
     // Either EOF or end of line encountered early
 
-    if ((c == EOF) || (c == '\n'))
+    if ((c == EOF) || (c == '\n')) {
+        flush_input(in);
         return make_error(4, "incomplete character literal");
+    }
 
     // Start of escape sequence encountered
 
@@ -116,13 +119,17 @@ object *read_character(FILE *in) {
 
         // Either EOF or end of line encountered early
 
-        if ((c == EOF) || (c == '\n'))
+        if ((c == EOF) || (c == '\n')) {
+            flush_input(in);
             return make_error(4, "incomplete character literal");
+        }
 
         // Make sure next charactor is the terminiating single-quote
 
-        if (peek(in) != '\'')
+        if (peek(in) != '\'') {
+            flush_input(in);
             return make_error(4, "character literal missing termination");
+        }
 
         c = make_esc_seq(c);
 
@@ -130,8 +137,10 @@ object *read_character(FILE *in) {
 
     // Make sure next charactor is the terminiating single-quote
 
-    if (peek(in) != '\'')
+    if (peek(in) != '\'') {
+        flush_input(in);
         return make_error(4, "character literal missing termination");
+    }
 
     trash = getc(in); // eat the postfix single quote
     return (make_character(c));
@@ -209,11 +218,14 @@ object *read_pair(FILE *in) {
 
 object *read(FILE *in) {
 
-    int   c;
-    int   i;
-    short sign = 1;
-    long  num  = 0;
-    char  buffer[BUFFER_MAX];
+    int  c; //TODO: shouldnt this be a char?
+    int  i;
+    int  len;
+    int  next_c;
+    int  state = 0;
+    bool decimal_encountered = false;
+    char buffer[BUFFER_MAX];
+    char numbuffer[64];  //TODO: make a constant
 
     eat_whitespace(in);
 
@@ -223,8 +235,10 @@ object *read(FILE *in) {
 
     if (c == '#') {
 
-        if (peek(in) == EOF || peek(in) == '\n')
+        if (peek(in) == EOF || peek(in) == '\n') {
+            flush_input(in);
             return make_error(10, "unexpected end of line encountered");
+        }
 
         c = getc(in);
         switch (c) {
@@ -241,33 +255,73 @@ object *read(FILE *in) {
         // Should never reach here
     }
 
-    // Handle digits and negation followed by a digit (integers)
+    // Handle numbers (fixed and floating)
 
-    if (isdigit(c) || (c == '-' && (isdigit(peek(in))))) {
+    if (c == '-' || c == '.' || isdigit(c)) {
 
-        if (c == '-')
-            sign = -1;
-        else
-            ungetc(c, in);
+        decimal_encountered = false;
+        numbuffer[0] = '\0';
 
-        while (isdigit(c = getc(in)))
-            num = (10 * num) + (c - '0');
-
-        num *= sign;
-
-        if (is_delimiter(c)) {
-            ungetc(c, in);
-            return make_fixnum(num);
-        } else {
-            flush_input(in);
-            return make_error(1, "number not followed by delimiter");
+        switch (c) {
+            case '-': state = 1; break; // negation
+            case '.': state = 2; break; // decimal point
+            default : state = 3;        // digit
         }
 
-        // Should never reach here
-        fprintf(stderr, "invalid state\n");
-        exit(EXIT_FAILURE);
+        while (state) {
 
-    }
+            if (state != 4) {
+                next_c = peek(in);
+                len = strlen(numbuffer);
+                numbuffer[len++] = c;
+                numbuffer[len++] = '\0';
+            }
+
+            switch (state) {
+                case 1:
+                    if (next_c == '.')
+                        state = 2; // decimal
+                    else if (isdigit(next_c))
+                        state = 3; // digits
+                    else
+                        state = 0; // end (non-number hyphen)
+                    break;
+                case 2:
+                    decimal_encountered = true;
+                    if (isdigit(next_c))
+                        state = 3; // digits
+                    else
+                        state = 0; // end  (non-number decimal)
+                    break;
+                case 3:
+                    if (next_c == '.' && !decimal_encountered)
+                        state = 2; // decimal
+                    else if (isdigit(next_c))
+                        state = 3; // another digit
+                    else if (is_delimiter(next_c))
+                        state = 4; // end
+                    else {
+                        flush_input(in);
+                        return make_error(99, "improperly formatted number");
+                    }
+                    break;
+                case 4:
+                    ungetc(c, in);
+                    return (decimal_encountered) ?
+                        make_floatnum(strtod(numbuffer, NULL)) :  //TODO: check strtod return value in make_floatnum
+                        make_fixnum(strtol(numbuffer, NULL, 10)); //TODO: check strtol return value in make_fixnum
+                default:
+                    flush_input(in);
+                    return make_error(99, "read_number state machine reached invalid state");
+
+            } // switch (state)
+
+            if (state)
+                c = getc(in);
+
+        } // while (state)
+
+    } // if number
 
     // Handle quote as an initial (strings)
 
@@ -293,8 +347,10 @@ object *read(FILE *in) {
 
             // Make sure we have enough space left in our buffer
 
-            if (i == (BUFFER_MAX - 1))
+            if (i == (BUFFER_MAX - 1)) {
+                flush_input(in);
                 return make_error(7, "string too long");
+            }
 
             // Convert escape sequences into control characters
 
@@ -333,8 +389,10 @@ object *read(FILE *in) {
 
             if (i < BUFFER_MAX - 1)
                 buffer[i++] = c;
-            else
+            else {
+                flush_input(in);
                 return make_error(40, "symbol too long. ");
+            }
 
             c = getc(in);
         }
@@ -345,6 +403,7 @@ object *read(FILE *in) {
             return make_symbol(buffer);
         }
 
+        flush_input(in);
         return make_error(41, "symbol not followed by a delimiter");
 
     }
@@ -360,6 +419,5 @@ object *read(FILE *in) {
     // We should have handled everything by now, if not then illegal state
 
     flush_input(in);
-    fprintf(stderr, "read illegal state\n");
-    exit(EXIT_FAILURE);
+    return make_error(234, "unrecognized input");
 }
