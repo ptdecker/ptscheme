@@ -101,6 +101,9 @@ void write(FILE *out, object *obj) {
         case FIXNUM:
             fprintf(out, "%ld", obj->data.fixnum.value);
             break;
+        case FLOATNUM:
+            fprintf(out, "%f", obj->data.floatnum.value);
+            break;
         case INPUT_PORT:
             fprintf(out, "#<input-port>");
             break;

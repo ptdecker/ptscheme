@@ -8,6 +8,7 @@
 #include "lispbool.h"
 #include "lispchar.h"
 #include "lispint.h"
+#include "lispfloat.h"
 #include "lispstr.h"
 #include "lisperr.h"
 #include "lisppair.h"
@@ -23,8 +24,10 @@
 bool is_self_evaluating(object *exp) {
     return is_boolean(exp)   ||
            is_fixnum(exp)    ||
+           is_floatnum(exp)  ||
            is_character(exp) ||
            is_empty(exp)     ||
+           is_error(exp)     ||
            is_string(exp);
 }
 
