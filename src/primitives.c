@@ -194,31 +194,62 @@ object *sub_proc(object *arguments) {
 // LISP Primitive Procedure: '*'
 
 object *mul_proc(object *arguments) {
-    long result = 1;
+    long   result = 1;
+    double result2 = 1.0;
+    bool   real = false;
 
     while (!is_empty(arguments)) {
-        result *= (car(arguments))->data.fixnum.value;
+        real = is_floatnum(car(arguments));
+        if (real)
+            result2 *= (car(arguments))->data.floatnum.value;
+        else
+            result *= (car(arguments))->data.fixnum.value;
         arguments = cdr(arguments);
     }
-    return make_fixnum(result);
+
+    if ((real || (result2 != 0.0)) && fmod(result2, 1) != 0.0)
+        return make_floatnum(result2 * (double)result);
+    else if (real || (result2 != 0.0))
+        return make_fixnum(lround(result2 * (double)result));
+    else
+        return make_fixnum(result);
 }
 
 // LISP Primitive Procedure: 'quotient'
 
 object *quotient_proc(object *arguments) {
-    return make_fixnum(
-            ((car(arguments) )->data.fixnum.value) /
-            ((cadr(arguments))->data.fixnum.value)
-        );
+    if (is_floatnum(car(arguments)) || is_floatnum(cadr(arguments))) {
+        return make_floatnum(
+                (is_floatnum(car(arguments))  ? (car(arguments))->data.floatnum.value  : (double)(car(arguments))->data.fixnum.value) /
+                (is_floatnum(cadr(arguments)) ? (cadr(arguments))->data.floatnum.value : (double)(cadr(arguments))->data.fixnum.value)
+            );
+    } else {
+        return make_fixnum(
+                ((car(arguments) )->data.fixnum.value) /
+                ((cadr(arguments))->data.fixnum.value)
+            );
+    }
+
 }
 
 // LISP Primitive Procedure: 'remainder'
 
 object *remainder_proc(object *arguments) {
-    return make_fixnum(
-            ((car(arguments) )->data.fixnum.value) %
-            ((cadr(arguments))->data.fixnum.value)
-        );
+//    return make_fixnum(
+//            ((car(arguments) )->data.fixnum.value) %
+//            ((cadr(arguments))->data.fixnum.value)
+//        );
+    if (is_floatnum(car(arguments)) || is_floatnum(cadr(arguments))) {
+        return make_floatnum(
+                fmod((is_floatnum(car(arguments))  ? (car(arguments))->data.floatnum.value  : (double)(car(arguments))->data.fixnum.value),
+                     (is_floatnum(cadr(arguments)) ? (cadr(arguments))->data.floatnum.value : (double)(cadr(arguments))->data.fixnum.value))
+            );
+    } else {
+        return make_fixnum(
+                ((car(arguments) )->data.fixnum.value) %
+                ((cadr(arguments))->data.fixnum.value)
+            );
+    }
 }
 
 // LISP Primitive Procedure: '=' (numeric only)
