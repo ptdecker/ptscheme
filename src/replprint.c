@@ -70,7 +70,7 @@ void write_pair(FILE *out, object *pair) {
     if (cdr_obj->type == PAIR) {
         fprintf(out, " ");
         write_pair(out, cdr_obj);
-    else {
+    } else {
         fprintf(out, " . ");
         write(out, cdr_obj);
     }
