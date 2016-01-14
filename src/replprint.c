@@ -56,7 +56,6 @@ void expand_esc_seq(char str[], const char c) {
     return;
 } // expand_esc_seq
 
-// TODO: The code below smells
 void write_pair(FILE *out, object *pair) {
     object *car_obj;
     object *cdr_obj;
@@ -64,11 +63,13 @@ void write_pair(FILE *out, object *pair) {
     car_obj = car(pair);
     cdr_obj = cdr(pair);
     write(out, car_obj);
+
+    if (cdr_obj->type == EMPTY_LIST)
+        return;
+
     if (cdr_obj->type == PAIR) {
         fprintf(out, " ");
         write_pair(out, cdr_obj);
-    } else if (cdr_obj->type == EMPTY_LIST)
-        return;
     else {
         fprintf(out, " . ");
         write(out, cdr_obj);

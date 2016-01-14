@@ -457,7 +457,7 @@ object *open_input_port_proc(object *arguments) {
     in = fopen(filename, "r");
     if (in == NULL) {
         fprintf(stderr, "could not open file \"%s\"\n", filename);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     return make_input_port(in);
 }
@@ -467,7 +467,7 @@ object *close_input_port_proc(object *arguments) {
     result = fclose(car(arguments)->data.input_port.stream);
     if (result == EOF) {
         fprintf(stderr, "could not close input port\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     return ok_symbol();
 }
@@ -483,7 +483,7 @@ object *open_output_port_proc(object *arguments) {
     out = fopen(filename, "w");
     if (out == NULL) {
         fprintf(stderr, "could not open file \"%s\"\n", filename);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     return make_output_port(out);
 }
@@ -493,7 +493,7 @@ object *close_output_port_proc(object *arguments) {
     result = fclose(car(arguments)->data.output_port.stream);
     if (result == EOF) {
         fprintf(stderr, "could not close output port\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     return ok_symbol();
 }

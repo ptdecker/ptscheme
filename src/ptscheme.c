@@ -84,7 +84,7 @@ object *lambda_body(object *exp) {
 int main(void) {
     object *exp;
     init_environments();
-    printf("ptscheme v0.2\n");
+    printf("ptscheme v0.3\n");
     printf("Use Ctrl-C or '(exit)'' to exit\n\n");
     while(true) {
         printf("> ");
