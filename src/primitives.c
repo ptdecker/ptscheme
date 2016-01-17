@@ -608,7 +608,6 @@ object *display_proc(object *arguments) {
         default:
             fprintf(stderr, "cannot display type\n");
     } // switch
-    printf("\n");
 
     return ok_symbol();
 
