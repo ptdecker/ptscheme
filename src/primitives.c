@@ -577,6 +577,43 @@ object *read_proc(object *arguments) {
     return (result == NULL) ? eof_object : result;
 }
 
+// Lisp Primitive Procedure: 'display'
+
+object *display_proc(object *arguments) {
+
+    object *obj;
+    char *str  = NULL;
+
+    obj = car(arguments);
+
+    switch (obj->type) {
+        case CHARACTER:
+            printf("%c", obj->data.character.value);
+            break;
+        case FIXNUM:
+            printf("%ld", obj->data.fixnum.value);
+            break;
+        case FLOATNUM:
+            printf("%f", obj->data.floatnum.value);
+            break;
+        case STRING:
+            printf("%s", str = obj->data.string.value);
+            break;
+        case SYMBOL:
+            printf("%s", obj->data.symbol.value);
+            break;
+        case ERROR:
+            printf("Error %ld: %s", obj->data.error.error_num, obj->data.error.error_msg);
+            break;
+        default:
+            fprintf(stderr, "cannot display type\n");
+    } // switch
+    printf("\n");
+
+    return ok_symbol();
+
+}
+
 // Macro definition for registering a primitive procedure
 
 #define add_procedure(scheme_name, c_name)       \
@@ -644,5 +681,7 @@ void populate_environment(object *env) {
     add_procedure("peek-char"         , peek_char_proc);
     add_procedure("write"             , write_proc);
     add_procedure("read"              , read_proc);
+
+    add_procedure("display"           , display_proc);
 
 }

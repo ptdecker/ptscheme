@@ -85,7 +85,7 @@ int main(void) {
     object *exp;
     init_environments();
     printf("ptscheme v0.3\n");
-    printf("Use Ctrl-C or '(exit)'' to exit\n\n");
+    printf("Use Ctrl-C or '(exit) to exit\n\n");
     while(true) {
         printf("> ");
         exp = read (stdin);
