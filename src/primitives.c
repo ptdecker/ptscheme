@@ -143,6 +143,7 @@ object *add_proc(object *arguments) {
         arguments = cdr(arguments);
     }
 
+    //TODO: Consider using fpisanint() instead of fmod approach
     if ((real || (result2 != 0.0)) && fmod(result2, 1) != 0.0)
         return make_floatnum(result2 + (double)result);
     else if (real || (result2 != 0.0))
@@ -183,6 +184,7 @@ object *sub_proc(object *arguments) {
         }
     }
 
+    //TODO: Consider using fpisanint() instead of fmod approach
     if (real_mode && fmod(result2, 1) != 0.0)
         return make_floatnum(result2);
     else if (real_mode)
@@ -207,6 +209,7 @@ object *mul_proc(object *arguments) {
         arguments = cdr(arguments);
     }
 
+    //TODO: Consider using fpisanint() instead of fmod approach
     if ((real || (result2 != 0.0)) && fmod(result2, 1) != 0.0)
         return make_floatnum(result2 * (double)result);
     else if (real || (result2 != 0.0))
@@ -217,6 +220,7 @@ object *mul_proc(object *arguments) {
 
 // LISP Primitive Procedure: 'quotient'
 
+//TODO: Add integer reduction, consider using fpisanint() instead of fmod approach
 object *quotient_proc(object *arguments) {
     if (is_floatnum(car(arguments)) || is_floatnum(cadr(arguments))) {
         return make_floatnum(
@@ -234,6 +238,7 @@ object *quotient_proc(object *arguments) {
 
 // LISP Primitive Procedure: 'remainder'
 
+//TODO: Add integer reduction, consider using fpisanint() instead of fmod approach
 object *remainder_proc(object *arguments) {
     if (is_floatnum(car(arguments)) || is_floatnum(cadr(arguments))) {
         return make_floatnum(
