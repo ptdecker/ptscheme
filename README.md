@@ -45,6 +45,17 @@ Run:
 
     $ ./ptscheme
 
+### The Standard Library
+
+A small standard library is provided that implements common operators including the '/' operator for the quotent function.
+To load the standard library from within the REPL:
+
+    > (load "./libs/stdlib.scm")
+    ok
+
+Replace the path with the appropriate path for your installation
+
+
 ### Implementation notes and credits
 
 Partial compiance with the [R5RS](http://www.schemers.org/Documents/Standards/R5RS/r5rs.pdf) standard is attempted, but I have included variations (such as C-style character literals).
